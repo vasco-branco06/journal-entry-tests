@@ -1,0 +1,226 @@
+<?xml version='1.0' encoding='utf-8'?>
+<spec id="file.interface" file="INTERFACE.xml" type="interface" project="journal-entry-tests" version="0.2" status="decided">
+  <invocations>
+    <invocation id="inv.analyze">
+      <purpose>Apply the five tests to a ledger and write results.xlsx.</purpose>
+      <trigger>journal-entry-tests analyze LEDGER [--out-dir DIR] [--round-base N] [--holidays FILE] [--benford-min-rows N] [--overwrite]</trigger>
+      <allowed_roles>user</allowed_roles>
+      <navigation>No navigation; one command, one run.</navigation>
+      <arguments>
+        <argument name="LEDGER" required="true">Path of the input CSV.</argument>
+        <argument name="--out-dir" default="out">Output folder; created if it does not exist.</argument>
+        <argument name="--round-base" default="1000">Base for the round values test.</argument>
+        <argument name="--holidays" default="none">Holidays CSV, one date per line.</argument>
+        <argument name="--benford-min-rows" default="1000">Minimum number of rows for the Benford test.</argument>
+        <argument name="--overwrite" default="false">Replace results.xlsx if it exists.</argument>
+      </arguments>
+      <actions_results>Writes results.xlsx and a final line on stdout; errors go to stderr.</actions_results>
+      <responsive>Not applicable: command line.</responsive>
+      <not_applicable kind="idle" reason="A command-line command has no idle state." />
+      <not_applicable kind="loading" reason="Version 1 shows no progress." />
+      <state id="state.analyze.empty" kind="empty">
+        <description>Zero valid rows, including the case where every row is rejected: code 0, empty sheets and the empty message.</description>
+      </state>
+      <state id="state.analyze.success" kind="success">
+        <description>Ends with code 0 and the final line.</description>
+      </state>
+      <state id="state.analyze.error" kind="error">
+        <description>Short message on stderr with code 1 or 2.</description>
+      </state>
+      <state id="state.analyze.partial" kind="partial">
+        <description>At least one valid row and at least one rejected row: code 0, Rejected rows sheet filled and the done message.</description>
+      </state>
+      <not_applicable kind="offline" reason="The tool always works without a network." />
+      <state id="state.analyze.no_permission" kind="no_permission">
+        <description>Output folder not writable: code 1.</description>
+      </state>
+    </invocation>
+  </invocations>
+  <screens>
+    <screen id="screen.sheet_readme">
+      <purpose>Explains the other sheets and shows the warning.</purpose>
+      <route>Sheet of the results.xlsx file</route>
+      <allowed_roles>user</allowed_roles>
+      <navigation>Excel tabs.</navigation>
+      <responsive>Fixed column widths, frozen header row; no breakpoints.</responsive>
+      <not_applicable kind="idle" reason="Static sheet of a generated file." />
+      <not_applicable kind="loading" reason="The file only opens after it is written." />
+      <not_applicable kind="empty" reason="The content is always shown, even with zeros." />
+      <state id="state.sheet_readme.success" kind="success">
+        <description>Help text and warning.</description>
+      </state>
+      <not_applicable kind="error" reason="Errors happen before the file exists." />
+      <not_applicable kind="partial" reason="The sheet is always complete." />
+      <not_applicable kind="offline" reason="No network is used." />
+      <not_applicable kind="no_permission" reason="No access control in the file." />
+    </screen>
+    <screen id="screen.sheet_summary">
+      <purpose>Alerts per test, with formulas.</purpose>
+      <route>Sheet of the results.xlsx file</route>
+      <allowed_roles>user</allowed_roles>
+      <navigation>Excel tabs.</navigation>
+      <responsive>Fixed column widths, frozen header row; no breakpoints.</responsive>
+      <not_applicable kind="idle" reason="Static sheet of a generated file." />
+      <not_applicable kind="loading" reason="The file only opens after it is written." />
+      <not_applicable kind="empty" reason="The content is always shown, even with zeros." />
+      <state id="state.sheet_summary.success" kind="success">
+        <description>Counts per test, zeros included.</description>
+      </state>
+      <not_applicable kind="error" reason="Errors happen before the file exists." />
+      <not_applicable kind="partial" reason="The sheet is always complete." />
+      <not_applicable kind="offline" reason="No network is used." />
+      <not_applicable kind="no_permission" reason="No access control in the file." />
+    </screen>
+    <screen id="screen.sheet_test">
+      <purpose>Sheet of one test (Duplicates, Round values, Weekend and holiday, Numbering gaps): alert table filtered by test_id.</purpose>
+      <route>Sheet of the results.xlsx file</route>
+      <allowed_roles>user</allowed_roles>
+      <navigation>Excel tabs.</navigation>
+      <responsive>Fixed column widths, frozen header row; no breakpoints.</responsive>
+      <not_applicable kind="idle" reason="Static sheet of a generated file." />
+      <not_applicable kind="loading" reason="The file only opens after it is written." />
+      <state id="state.sheet_test.empty" kind="empty">
+        <description>No alerts: shows the message.</description>
+      </state>
+      <state id="state.sheet_test.success" kind="success">
+        <description>Table with the alerts of the test.</description>
+      </state>
+      <not_applicable kind="error" reason="Errors happen before the file exists." />
+      <not_applicable kind="partial" reason="The sheet is always complete." />
+      <not_applicable kind="offline" reason="No network is used." />
+      <not_applicable kind="no_permission" reason="No access control in the file." />
+    </screen>
+    <screen id="screen.sheet_benford">
+      <purpose>Benford result table and a native chart of expected against observed.</purpose>
+      <route>Sheet of the results.xlsx file</route>
+      <allowed_roles>user</allowed_roles>
+      <navigation>Excel tabs.</navigation>
+      <responsive>Fixed column widths, frozen header row; no breakpoints.</responsive>
+      <not_applicable kind="idle" reason="Static sheet of a generated file." />
+      <not_applicable kind="loading" reason="The file only opens after it is written." />
+      <state id="state.sheet_benford.empty" kind="empty">
+        <description>Test did not run: shows the message.</description>
+      </state>
+      <state id="state.sheet_benford.success" kind="success">
+        <description>Table, classification and chart.</description>
+      </state>
+      <not_applicable kind="error" reason="Errors happen before the file exists." />
+      <not_applicable kind="partial" reason="The sheet is always complete." />
+      <not_applicable kind="offline" reason="No network is used." />
+      <not_applicable kind="no_permission" reason="No access control in the file." />
+    </screen>
+    <screen id="screen.sheet_rejected">
+      <purpose>Table of rejected rows.</purpose>
+      <route>Sheet of the results.xlsx file</route>
+      <allowed_roles>user</allowed_roles>
+      <navigation>Excel tabs.</navigation>
+      <responsive>Fixed column widths, frozen header row; no breakpoints.</responsive>
+      <not_applicable kind="idle" reason="Static sheet of a generated file." />
+      <not_applicable kind="loading" reason="The file only opens after it is written." />
+      <state id="state.sheet_rejected.empty" kind="empty">
+        <description>No rejected rows: shows the message.</description>
+      </state>
+      <state id="state.sheet_rejected.success" kind="success">
+        <description>Table with source_row, reason and the raw line.</description>
+      </state>
+      <not_applicable kind="error" reason="Errors happen before the file exists." />
+      <not_applicable kind="partial" reason="The sheet is always complete." />
+      <not_applicable kind="offline" reason="No network is used." />
+      <not_applicable kind="no_permission" reason="No access control in the file." />
+    </screen>
+  </screens>
+  <copy_source>All visible text lives in the content file; states link to it by references.</copy_source>
+  <links>
+    <ref type="depends_on" from="file.interface" to="GOAL.xml#goal.main" />
+    <ref type="implements" from="inv.analyze" to="GOAL.xml#outcome.main" />
+    <ref type="depends_on" from="inv.analyze" to="GOAL.xml#role.user" />
+    <ref type="depends_on" from="inv.analyze" to="SCHEMA.xml#perm.read_input" />
+    <ref type="depends_on" from="inv.analyze" to="SCHEMA.xml#perm.write_output" />
+    <ref type="uses" from="inv.analyze" to="CONTENT.xml#str.help_analyze" />
+    <ref type="uses" from="screen.sheet_readme" to="CONTENT.xml#str.sheet_readme" />
+    <ref type="implements" from="screen.sheet_readme" to="GOAL.xml#crit.workbook" />
+    <ref type="depends_on" from="screen.sheet_readme" to="GOAL.xml#role.user" />
+    <ref type="uses" from="screen.sheet_summary" to="CONTENT.xml#str.sheet_summary" />
+    <ref type="implements" from="screen.sheet_summary" to="GOAL.xml#crit.workbook" />
+    <ref type="depends_on" from="screen.sheet_summary" to="GOAL.xml#role.user" />
+    <ref type="uses" from="screen.sheet_test" to="CONTENT.xml#str.sheet_duplicates" />
+    <ref type="implements" from="screen.sheet_test" to="GOAL.xml#crit.workbook" />
+    <ref type="depends_on" from="screen.sheet_test" to="GOAL.xml#role.user" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.sheet_benford" />
+    <ref type="implements" from="screen.sheet_benford" to="GOAL.xml#crit.workbook" />
+    <ref type="depends_on" from="screen.sheet_benford" to="GOAL.xml#role.user" />
+    <ref type="uses" from="screen.sheet_rejected" to="CONTENT.xml#str.sheet_rejected" />
+    <ref type="implements" from="screen.sheet_rejected" to="GOAL.xml#crit.workbook" />
+    <ref type="depends_on" from="screen.sheet_rejected" to="GOAL.xml#role.user" />
+    <ref type="displays" from="screen.sheet_test" to="SCHEMA.xml#table.alert" />
+    <ref type="uses" from="screen.sheet_test" to="CONTENT.xml#str.sheet_round" />
+    <ref type="uses" from="screen.sheet_test" to="CONTENT.xml#str.sheet_weekend" />
+    <ref type="uses" from="screen.sheet_test" to="CONTENT.xml#str.sheet_gaps" />
+    <ref type="displays" from="screen.sheet_benford" to="SCHEMA.xml#table.benford_result" />
+    <ref type="displays" from="screen.sheet_rejected" to="SCHEMA.xml#table.rejected_row" />
+    <ref type="displays" from="screen.sheet_summary" to="SCHEMA.xml#table.alert" />
+    <ref type="uses" from="screen.sheet_readme" to="CONTENT.xml#str.readme_intro" />
+    <ref type="uses" from="screen.sheet_readme" to="CONTENT.xml#str.warning" />
+    <ref type="implements" from="state.analyze.empty" to="RULES.xml#rule.validation_rows" />
+    <ref type="uses" from="state.analyze.empty" to="CONTENT.xml#str.msg_empty" />
+    <ref type="implements" from="state.analyze.success" to="GOAL.xml#outcome.main" />
+    <ref type="uses" from="state.analyze.success" to="CONTENT.xml#str.msg_done" />
+    <ref type="implements" from="state.analyze.error" to="RULES.xml#rule.exit_codes" />
+    <ref type="uses" from="state.analyze.error" to="CONTENT.xml#str.err_usage" />
+    <ref type="uses" from="state.analyze.error" to="CONTENT.xml#str.err_missing_file" />
+    <ref type="uses" from="state.analyze.error" to="CONTENT.xml#str.err_missing_columns" />
+    <ref type="uses" from="state.analyze.error" to="CONTENT.xml#str.err_unreadable" />
+    <ref type="uses" from="state.analyze.error" to="CONTENT.xml#str.err_exists" />
+    <ref type="uses" from="state.analyze.error" to="CONTENT.xml#str.err_holidays" />
+    <ref type="uses" from="state.analyze.error" to="CONTENT.xml#str.err_too_many_rows" />
+    <ref type="implements" from="state.analyze.partial" to="RULES.xml#rule.validation_rows" />
+    <ref type="uses" from="state.analyze.partial" to="CONTENT.xml#str.msg_done" />
+    <ref type="implements" from="state.analyze.no_permission" to="RULES.xml#rule.exit_codes" />
+    <ref type="uses" from="state.analyze.no_permission" to="CONTENT.xml#str.err_out_dir" />
+    <ref type="implements" from="state.sheet_readme.success" to="RULES.xml#rule.alert_notice" />
+    <ref type="uses" from="state.sheet_readme.success" to="CONTENT.xml#str.readme_intro" />
+    <ref type="uses" from="state.sheet_readme.success" to="CONTENT.xml#str.warning" />
+    <ref type="implements" from="state.sheet_summary.success" to="GOAL.xml#crit.workbook" />
+    <ref type="implements" from="state.sheet_test.empty" to="GOAL.xml#crit.false_alerts" />
+    <ref type="uses" from="state.sheet_test.empty" to="CONTENT.xml#str.no_alerts" />
+    <ref type="implements" from="state.sheet_test.success" to="GOAL.xml#crit.recall" />
+    <ref type="implements" from="state.sheet_benford.empty" to="RULES.xml#rule.benford_min_rows" />
+    <ref type="uses" from="state.sheet_benford.empty" to="CONTENT.xml#str.benford_skip" />
+    <ref type="implements" from="state.sheet_benford.success" to="RULES.xml#rule.benford_mad" />
+    <ref type="uses" from="state.sheet_benford.success" to="CONTENT.xml#str.reason_benford" />
+    <ref type="implements" from="state.sheet_rejected.empty" to="RULES.xml#rule.validation_rows" />
+    <ref type="uses" from="state.sheet_rejected.empty" to="CONTENT.xml#str.no_rejected" />
+    <ref type="implements" from="state.sheet_rejected.success" to="RULES.xml#rule.validation_rows" />
+    <ref type="uses" from="state.sheet_rejected.success" to="CONTENT.xml#str.rej_bad_date" />
+    <ref type="uses" from="screen.sheet_readme" to="CONTENT.xml#str.explain_summary" />
+    <ref type="uses" from="screen.sheet_readme" to="CONTENT.xml#str.explain_duplicates" />
+    <ref type="uses" from="screen.sheet_readme" to="CONTENT.xml#str.explain_round" />
+    <ref type="uses" from="screen.sheet_readme" to="CONTENT.xml#str.explain_weekend" />
+    <ref type="uses" from="screen.sheet_readme" to="CONTENT.xml#str.explain_gaps" />
+    <ref type="uses" from="screen.sheet_readme" to="CONTENT.xml#str.explain_benford" />
+    <ref type="uses" from="screen.sheet_readme" to="CONTENT.xml#str.explain_rejected" />
+    <ref type="uses" from="screen.sheet_summary" to="CONTENT.xml#str.col_test" />
+    <ref type="uses" from="screen.sheet_summary" to="CONTENT.xml#str.col_alerts" />
+    <ref type="uses" from="screen.sheet_test" to="CONTENT.xml#str.col_source_row" />
+    <ref type="uses" from="screen.sheet_test" to="CONTENT.xml#str.col_entry_id" />
+    <ref type="uses" from="screen.sheet_test" to="CONTENT.xml#str.col_document_number" />
+    <ref type="uses" from="screen.sheet_test" to="CONTENT.xml#str.col_reason" />
+    <ref type="uses" from="screen.sheet_test" to="CONTENT.xml#str.col_detail" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.benford_caveat" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.col_digit" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.col_count" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.col_expected" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.col_observed" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.bf_n_rows" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.bf_mad" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.bf_chi2" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.bf_p_value" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.bf_classification" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.chart_title" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.chart_x" />
+    <ref type="uses" from="screen.sheet_benford" to="CONTENT.xml#str.chart_y" />
+    <ref type="uses" from="screen.sheet_rejected" to="CONTENT.xml#str.col_source_row" />
+    <ref type="uses" from="screen.sheet_rejected" to="CONTENT.xml#str.col_reason" />
+    <ref type="uses" from="screen.sheet_rejected" to="CONTENT.xml#str.col_raw_line" />
+  </links>
+</spec>

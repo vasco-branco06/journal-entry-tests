@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='utf-8'?>
+<spec id="file.design" file="DESIGN.xml" type="design" project="journal-entry-tests" version="0.2" status="decided">
+  <colour_tokens>
+    <token name="header" light_fg="#FFFFFF" light_bg="#1F3A5F" contrast_ratio_light="11.48" dark="not_applicable" />
+    <token name="alert_row" light_fg="#7A1F17" light_bg="#FBE3E1" contrast_ratio_light="8.44" dark="not_applicable" />
+    <token name="ok_row" light_fg="#14532D" light_bg="#DCFCE7" contrast_ratio_light="8.3" dark="not_applicable" />
+    <token name="body" light_fg="#1B1B1B" light_bg="#FFFFFF" contrast_ratio_light="17.22" dark="not_applicable" />
+    <token name="note" light_fg="#333333" light_bg="#FFF1D6" contrast_ratio_light="11.31" dark="not_applicable" />
+  </colour_tokens>
+  <dark_mode>Not applicable: Excel uses the user's theme; the colours above are fixed and have adequate contrast.</dark_mode>
+  <typography>Calibri 11 for body text; bold headers.</typography>
+  <spacing>Column width fitted to content, between 12 and 60 characters; no merged cells.</spacing>
+  <radii_shadows>Not applicable: no shapes or shadows apart from the chart.</radii_shadows>
+  <grid>One table per sheet, starting at cell A3; A1 shows the title, which is the sheet name. An empty state shows its message at A3. README sheet: the notice box at A3, then the intro and the sheet explanations. Benford sheet: the digit table at A3, the result labels and the caveat below it, the chart to its right.</grid>
+  <breakpoints>Not applicable.</breakpoints>
+  <component_catalogue>
+    <ui_component id="ui.table_header">
+      <variants>Table header with white text on dark blue, filter on.</variants>
+      <states>No interactive states.</states>
+    </ui_component>
+    <ui_component id="ui.alert_row">
+      <variants>Alert row with light red background and dark text; the meaning is also in the text of the reason column.</variants>
+      <states>No interactive states.</states>
+    </ui_component>
+    <ui_component id="ui.note_box">
+      <variants>Notice box on the README sheet with the suspicion warning.</variants>
+      <states>No interactive states.</states>
+    </ui_component>
+    <ui_component id="ui.benford_chart">
+      <variants>Native column chart: expected and observed per digit, with axis titles.</variants>
+      <states>No interactive states.</states>
+    </ui_component>
+  </component_catalogue>
+  <icons_imagery>No icons or images.</icons_imagery>
+  <tone_of_voice>Dry and factual, in English; an alert describes what was found without accusing.</tone_of_voice>
+  <accessibility>WCAG AA minimum contrast (4.5 to 1) for the colour table pairs; no meaning conveyed by colour alone; frozen header; chart with axis titles; touch targets do not apply.</accessibility>
+  <links>
+    <ref type="depends_on" from="file.design" to="GOAL.xml#goal.main" />
+    <ref type="implements" from="ui.table_header" to="GOAL.xml#crit.workbook" />
+    <ref type="implements" from="ui.alert_row" to="GOAL.xml#crit.recall" />
+    <ref type="implements" from="ui.note_box" to="RULES.xml#rule.alert_notice" />
+    <ref type="implements" from="ui.benford_chart" to="RULES.xml#rule.benford_mad" />
+    <ref type="depends_on" from="ui.note_box" to="INTERFACE.xml#screen.sheet_readme" />
+    <ref type="depends_on" from="ui.benford_chart" to="INTERFACE.xml#screen.sheet_benford" />
+    <ref type="depends_on" from="ui.alert_row" to="INTERFACE.xml#screen.sheet_test" />
+    <ref type="depends_on" from="ui.table_header" to="INTERFACE.xml#screen.sheet_summary" />
+  </links>
+</spec>

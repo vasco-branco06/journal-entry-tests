@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='utf-8'?>
+<spec id="file.architecture" file="ARCHITECTURE.xml" type="architecture" project="journal-entry-tests" version="0.2" status="decided">
+  <components>
+    <component id="comp.cli">
+      <responsibility>Read arguments, orchestrate the flow and return the exit code.</responsibility>
+      <owned_data>None.</owned_data>
+      <failure_behaviour>Short message and exit code 1.</failure_behaviour>
+    </component>
+    <component id="comp.validation">
+      <responsibility>Read the CSV, validate columns and rows, convert amounts to cents.</responsibility>
+      <owned_data>Accepted-rows table and rejected-rows table, in memory.</owned_data>
+      <failure_behaviour>Missing columns or unreadable file: code 2; bad row: rejected.</failure_behaviour>
+    </component>
+    <component id="comp.checks">
+      <responsibility>Five pure functions, one per test, that receive the validated table and return alerts in the common format.</responsibility>
+      <owned_data>Benford result in memory.</owned_data>
+      <failure_behaviour>Benford with too few rows does not run and says so.</failure_behaviour>
+    </component>
+    <component id="comp.aggregator">
+      <responsibility>Join the alerts into a single format. Lives in the checks module.</responsibility>
+      <owned_data>Alerts table.</owned_data>
+      <failure_behaviour>Fails only through a programming error.</failure_behaviour>
+    </component>
+    <component id="comp.excel_writer">
+      <responsibility>Write results.xlsx with 8 sheets, tables, formulas and the Benford chart.</responsibility>
+      <owned_data>results.xlsx.</owned_data>
+      <failure_behaviour>Unwritable folder, locked output file or too many rows for one sheet: code 1, no half-written file.</failure_behaviour>
+    </component>
+  </components>
+  <module name="content">content.py holds the strings of the content file as Python constants; a test keeps the two equal.</module>
+  <private_component name="synthetic_generator">Synthetic data generator: outside the public repository, in a private project reused by the machine learning project.</private_component>
+  <data_flow>
+    <flow direction="in" trigger="analyze command">Input CSV to validation.</flow>
+    <flow direction="forward" trigger="validation finished">Accepted rows to the five tests.</flow>
+    <flow direction="forward" trigger="tests finished">Alerts to the aggregator and then to the Excel writer.</flow>
+    <flow direction="out" trigger="aggregation finished">results.xlsx to the output folder.</flow>
+  </data_flow>
+  <stack>
+    <item name="python">Python 3.11 or later; versions pinned in constraints.txt, with python_version markers for NumPy and SciPy.</item>
+    <item name="pandas_numpy">pandas, NumPy: tables and calculations.</item>
+    <item name="scipy">SciPy: informational chi-square.</item>
+    <item name="xlsxwriter">XlsxWriter: tables, formulas and native chart.</item>
+    <item name="argparse">argparse: CLI.</item>
+    <item name="pytest_ruff">pytest, ruff and openpyxl (only to read results.xlsx in tests): tests and style.</item>
+    <item name="venv">venv and pyproject.toml.</item>
+  </stack>
+  <external_services>None. The network is used only by CI and by package installation.</external_services>
+  <environments>
+    <environment name="dev">Owner's computer, local venv.</environment>
+    <environment name="staging">GitHub Actions, Python 3.11 and 3.14.</environment>
+    <environment name="prod">Public GitHub repository, tagged release.</environment>
+  </environments>
+  <folder_structure>src/journal_entry_tests (cli, validation, checks, excel_writer, content), tests and tests/fixtures, spec, context, data, .github/workflows.</folder_structure>
+  <hosting>GitHub, public repository. No server.</hosting>
+  <scaling_limits>Designed and tested for up to 100000 rows in memory; no hard limit is enforced on the input and larger files are untested. A workbook sheet holds at most 1048573 table rows; above that the run stops with code 1.</scaling_limits>
+  <logging_alerting>Errors on stderr and the final result line on stdout; no log files and no alerting.</logging_alerting>
+  <rollback>Revert the commit or delete the release tag on GitHub.</rollback>
+  <links>
+    <ref type="depends_on" from="file.architecture" to="GOAL.xml#goal.main" />
+    <ref type="implements" from="comp.cli" to="RULES.xml#rule.exit_codes" />
+    <ref type="implements" from="comp.cli" to="RULES.xml#rule.overwrite" />
+    <ref type="implements" from="comp.validation" to="RULES.xml#rule.validation_rows" />
+    <ref type="implements" from="comp.validation" to="RULES.xml#rule.amount_cents" />
+    <ref type="implements" from="comp.validation" to="RULES.xml#rule.encoding" />
+    <ref type="implements" from="comp.checks" to="RULES.xml#rule.duplicate" />
+    <ref type="implements" from="comp.checks" to="RULES.xml#rule.round" />
+    <ref type="implements" from="comp.checks" to="RULES.xml#rule.weekend_holiday" />
+    <ref type="implements" from="comp.checks" to="RULES.xml#rule.gaps" />
+    <ref type="implements" from="comp.checks" to="RULES.xml#rule.benford_mad" />
+    <ref type="implements" from="comp.checks" to="GOAL.xml#crit.runtime" />
+    <ref type="implements" from="comp.aggregator" to="RULES.xml#rule.aggregator" />
+    <ref type="implements" from="comp.excel_writer" to="GOAL.xml#crit.workbook" />
+    <ref type="implements" from="comp.excel_writer" to="RULES.xml#rule.formula_neutralize" />
+    <ref type="implements" from="comp.excel_writer" to="RULES.xml#rule.alert_notice" />
+    <ref type="depends_on" from="comp.cli" to="INTERFACE.xml#inv.analyze" />
+    <ref type="implements" from="comp.validation" to="RULES.xml#rule.value_format" />
+    <ref type="implements" from="comp.validation" to="RULES.xml#rule.file_structure" />
+    <ref type="implements" from="comp.excel_writer" to="RULES.xml#rule.excel_writing" />
+  </links>
+</spec>

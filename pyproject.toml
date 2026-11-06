@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "journal-entry-tests"
+version = "0.1.0"
+description = "Five journal entry tests for fraud-risk triage, written to an Excel workbook."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = [
+    "pandas",
+    "numpy",
+    "scipy",
+    "XlsxWriter",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "openpyxl",
+]
+word = [
+    "python-docx",
+]
+
+[project.scripts]
+journal-entry-tests = "journal_entry_tests.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

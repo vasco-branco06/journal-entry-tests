@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='utf-8'?>
+<spec id="file.goal" file="GOAL.xml" type="goal" project="journal-entry-tests" version="0.2" status="decided">
+  <goal id="goal.main">A command-line tool, published on GitHub, that reads an accounting ledger CSV, applies five journal entry tests and writes an Excel workbook that supports fraud-risk triage by a human reviewer.</goal>
+  <expected_outcome id="outcome.main">Running 'journal-entry-tests analyze ledger.csv --out-dir out' on a valid CSV produces out/results.xlsx with 8 sheets, exit code 0, and every planted problem in the test files appears as an alert.</expected_outcome>
+  <success_criteria>
+    <criterion id="crit.recall">
+      <metric>Recall of planted problems in the test file</metric>
+      <threshold>exactly 100 percent</threshold>
+      <measured_by>Automated recall test on the test file with planted problems</measured_by>
+    </criterion>
+    <criterion id="crit.false_alerts">
+      <metric>Alerts from the four tests other than Benford on the clean test ledger</metric>
+      <threshold>exactly 0 alerts</threshold>
+      <measured_by>Automated test on the clean test file</measured_by>
+    </criterion>
+    <criterion id="crit.exit_codes">
+      <metric>Documented exit code cases handled correctly</metric>
+      <threshold>exactly 3 of 3 cases</threshold>
+      <measured_by>Automated test of the three exit cases</measured_by>
+    </criterion>
+    <criterion id="crit.workbook">
+      <metric>Sheets in the Excel workbook</metric>
+      <threshold>exactly 8 sheets</threshold>
+      <measured_by>Automated test that opens the file and counts the sheets</measured_by>
+    </criterion>
+    <criterion id="crit.runtime">
+      <metric>Analysis time for a 100000-row ledger</metric>
+      <threshold>60000 ms or less</threshold>
+      <measured_by>Automated timed test on a 100000-row ledger</measured_by>
+    </criterion>
+    <criterion id="crit.readme">
+      <metric>README completeness</metric>
+      <threshold>5 of 5 items</threshold>
+      <measured_by>Manual review of the README against the checklist</measured_by>
+      <checklist>
+        <item>Warning that an alert is a suspicion and not proof of fraud</item>
+        <item>Text written in English</item>
+        <item>LICENSE file with the MIT licence</item>
+        <item>Installation and usage instructions</item>
+        <item>Table of the input CSV format</item>
+      </checklist>
+    </criterion>
+  </success_criteria>
+  <users>
+    <role id="role.user">
+      <needs>Triage of journal entries in a ledger that must not leave their computer.</needs>
+      <permissions>Read the input CSV and write to the output folder.</permissions>
+    </role>
+    <role id="role.maintainer">
+      <needs>Maintain and publish the repository.</needs>
+      <permissions>Write to the repository and publish releases on GitHub.</permissions>
+    </role>
+  </users>
+  <scope_in id="scope.in">The analyze command, CSV validation, five tests, aggregator, Excel workbook, English README, MIT licence, pytest tests and CI on GitHub Actions.</scope_in>
+  <scope_out id="scope.out">Synthetic data generator (lives in a separate private project, outside the public repository), Word report (optional future unit), graphical interface, server, database, PyPI publishing, multiple currencies, input formats other than CSV.</scope_out>
+  <constraints>
+    <constraint id="constraint.budget" kind="budget">
+      <threshold>0 EUR or less per month</threshold>
+      <measured_by>Reading the owner's real invoices</measured_by>
+    </constraint>
+    <constraint id="constraint.privacy" kind="privacy">
+      <threshold>exactly 0 network calls during analyze</threshold>
+      <measured_by>Automated test that blocks sockets during analyze</measured_by>
+    </constraint>
+    <constraint id="constraint.python_versions" kind="compatibility">
+      <threshold>exactly 2 of 2 Python versions green in CI, on Ubuntu and on Windows</threshold>
+      <measured_by>GitHub Actions run on 3.11 and 3.14, on ubuntu-latest and windows-latest</measured_by>
+    </constraint>
+    <constraint id="constraint.no_real_data" kind="privacy">
+      <threshold>exactly 0 real records in the repository</threshold>
+      <measured_by>Manual review of the files in tests/fixtures before each release</measured_by>
+    </constraint>
+  </constraints>
+  <deadline>No deadline set by the owner.</deadline>
+  <assumptions>
+    <assumption>The ledger has a single currency; no conversion is done.</assumption>
+    <assumption>The ledger fits in memory (designed for up to 100000 rows).</assumption>
+    <assumption>The defaults (round base 1000, Benford minimum of 1000 rows) are reasonable for triage; they are configurable.</assumption>
+  </assumptions>
+  <risks>
+    <risk>The newest NumPy and SciPy require Python 3.12 or later, so a pip freeze taken on 3.14 cannot install on 3.11; mitigation: constraints.txt with python_version markers, tested in CI.</risk>
+    <risk>The Nigrini thresholds were confirmed only in secondary sources.</risk>
+    <risk>The official ISA 240 text was not confirmed; the README cites only the topic.</risk>
+    <risk>Nigrini thresholds can flag ledgers near the minimum size even when they follow Benford (own simulation of 2000 runs per size: 2.25 percent flagged at 1000 rows, 1.0 percent at 1200, 0 percent at 5000); mitigation: caveat in the README and on the Benford sheet.</risk>
+    <risk>Someone using a result as proof of fraud; mitigation: warning in the README and in the workbook.</risk>
+  </risks>
+  <glossary>
+    <term name="ledger">File with the accounting journal entries, one row per entry line.</term>
+    <term name="manual entry">Journal entry typed by a person and not generated by a system.</term>
+    <term name="alert">A row or group matching a test; it is a suspicion to review, not proof.</term>
+    <term name="MAD">Mean absolute deviation between the observed and expected first digit distribution.</term>
+    <term name="Benford">Expected first digit distribution, log10(1 + 1/d).</term>
+    <term name="integer cents">Amounts stored as integers in cents to avoid rounding errors.</term>
+    <term name="rejected row">CSV row that fails validation and goes to the Rejected rows sheet.</term>
+    <term name="ground truth">List of problems planted in a synthetic ledger, used by the tests.</term>
+    <term name="fixture">Small synthetic file stored in tests/fixtures for the tests.</term>
+    <term name="source_row">Line of the input CSV where a row starts, counting the header as line 1; identifies a row because entry_id may repeat.</term>
+    <term name="entry_id">Text identifier of a journal entry; may repeat across rows of the same entry.</term>
+    <term name="document_number">Integer number of the source document, used by the numbering gaps test.</term>
+    <term name="valid row">Row that passed validation; also called accepted row in the architecture.</term>
+    <term name="duplicate">Rows sharing the same account_code, signed amount and posting_date.</term>
+    <term name="gap">A range of missing integers between the minimum and maximum distinct document numbers.</term>
+    <term name="round value">An absolute amount of at least the round base that is a multiple of it.</term>
+    <term name="population-level alert">An alert about the whole ledger, such as Benford, with no source_row.</term>
+  </glossary>
+  <effort specification_hours="4" build_review_hours="7.5">Estimate: specification 4 h in total (about 2.5 h already done); build in five units by the AI, with about 1.5 h of owner reading and approval per unit, about 7.5 h. Available: 2 to 3 h per weekday and 5 to 6 h per weekend day. Fits in about 1 to 2 weeks. Estimate, not measured.</effort>
+  <links>
+  </links>
+</spec>

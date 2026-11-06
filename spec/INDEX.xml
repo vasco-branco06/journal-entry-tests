@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='utf-8'?>
+<spec id="file.index" file="INDEX.xml" type="index" project="journal-entry-tests" version="0.2" status="decided" profile="full">
+  <note>Profile full: the Excel file counts as a screen surface. Conditional files: CONTENT (visible text), SECURITY (third-party files and writing), DEPLOYMENT (CI and publication).</note>
+  <files>
+    <file name="GOAL.xml" version="0.2" status="decided" />
+    <file name="ARCHITECTURE.xml" version="0.2" status="decided" />
+    <file name="SCHEMA.xml" version="0.2" status="decided" />
+    <file name="RULES.xml" version="0.2" status="decided" />
+    <file name="INTERFACE.xml" version="0.2" status="decided" />
+    <file name="DESIGN.xml" version="0.2" status="decided" />
+    <file name="MOTION.xml" version="0.1" status="decided" />
+    <file name="TESTS.xml" version="0.2" status="decided" />
+    <file name="CONTENT.xml" version="0.2" status="decided" />
+    <file name="SECURITY.xml" version="0.2" status="decided" />
+    <file name="DEPLOYMENT.xml" version="0.2" status="decided" />
+  </files>
+  <creation_order>GOAL, ARCHITECTURE, SCHEMA, RULES, INTERFACE, DESIGN, MOTION, TESTS, INDEX; conditional files after their dependency: CONTENT after GOAL, SECURITY after SCHEMA, DEPLOYMENT after ARCHITECTURE.</creation_order>
+  <decision_log>
+    <decision id="d01" decided_by="owner" affects="GOAL">Scope: public Python tool, five tests, Excel output.</decision>
+    <decision id="d02" decided_by="owner" affects="SCHEMA">CSV with five required and three optional columns (Q1).</decision>
+    <decision id="d03" decided_by="owner" affects="RULES">Duplicate: same account, amount and date (Q2); round: multiple of 1000 (Q3).</decision>
+    <decision id="d04" decided_by="owner" affects="RULES">Weekends plus holidays from an optional CSV (Q4); gaps over distinct numbers (Q5).</decision>
+    <decision id="d05" decided_by="owner" affects="RULES">Benford: MAD, first digit, minimum of 1000 rows (Q6, Q7).</decision>
+    <decision id="d06" decided_by="owner" affects="GOAL">MIT licence; Excel with XlsxWriter; Python 3.11 or later and CI on 3.11 and 3.14.</decision>
+    <decision id="d07" decided_by="owner" affects="GOAL">Word report outside v1, optional final unit.</decision>
+    <decision id="d08" decided_by="owner" affects="ARCHITECTURE">Architecture and CSV format approved (Q15); stack approved (Q17).</decision>
+    <decision id="d09" decided_by="owner" affects="GOAL">Generator outside the public repository, in a private project, with small files in tests/fixtures (Q16).</decision>
+    <decision id="d10" decided_by="owner (accepted recommendation)" affects="RULES">Minimum of 1000 rows and default base 1000, recorded as assumptions.</decision>
+    <decision id="d11" decided_by="owner (accepted recommendation)" affects="RULES">Accepted all 11 open recommendations: repeated entry_id, decimals, decimal comma, empty file, Benford alert level, overwrite, runtime, encoding, text length, holidays format, fixture size.</decision>
+    <decision id="d13" decided_by="owner" affects="INDEX">Approved the plain-language summary of the specification network (2026-11-05); files marked decided; network unverified because the official checker is unavailable.</decision>
+    <decision id="d14" decided_by="owner (approved plan, 2026-11-05)" affects="SCHEMA, RULES, TESTS">Strict ASCII formats for numbers and dates, with no trimming.</decision>
+    <decision id="d15" decided_by="owner (approved plan, 2026-11-05)" affects="RULES, CONTENT, TESTS">File structure rules: extra columns, field counts, empty file, repeated column, multi-line source_row, holidays BOM and repeats.</decision>
+    <decision id="d16" decided_by="owner (approved plan, 2026-11-05)" affects="RULES, ARCHITECTURE, TESTS">Excel writing rules: write_string, computed formula values, text cut at the cell limit, atomic replace, locked file is code 1.</decision>
+    <decision id="d17" decided_by="owner (approved plan, 2026-11-05)" affects="ARCHITECTURE, GOAL, SECURITY, DEPLOYMENT">Versions pinned in constraints.txt with python_version markers, replacing a plain pip freeze; the four dependencies stay.</decision>
+    <decision id="d18" decided_by="owner (approved plan, 2026-11-05)" affects="SCHEMA, TESTS">ground_truth.csv gains document_number, so the recall test can match gaps and Benford.</decision>
+    <decision id="d19" decided_by="owner (approved plan, 2026-11-05)" affects="CONTENT, DESIGN, INTERFACE">Added the missing visible strings and the sheet layout; Benford small-sample caveat; thresholds unchanged.</decision>
+    <decision id="d20" decided_by="owner (approved plan, 2026-11-05)" affects="ARCHITECTURE, GOAL, TESTS">Single checks module holding the five tests and the aggregator; unit U4 merged into U3; content.py with a sync test.</decision>
+    <decision id="d21" decided_by="owner (approved plan, 2026-11-05)" affects="DEPLOYMENT, GOAL, TESTS">CI also runs on Windows.</decision>
+    <decision id="d22" decided_by="owner (approved plan, 2026-11-05)" affects="all files">Removed referenced_by entries, which only repeated the forward refs in reverse; they can be regenerated from the ref entries.</decision>
+    <decision id="d12" decided_by="owner" affects="CONTENT">All repository text, specification prose, READMEs and prompts are in English; the conversation with the owner is in Portuguese.</decision>
+    <decision id="d23" decided_by="owner (approved plan, 2026-11-06)" affects="RULES">Broken quoting in the ledger (an unclosed quote, or text after a closing quote) makes the whole file unreadable: code 2. It silently swallowed rows or altered values before.</decision>
+    <decision id="d24" decided_by="owner (approved plan, 2026-11-06)" affects="RULES, CONTENT, ARCHITECTURE, INTERFACE">More rows than one Excel sheet can hold stops the run with a new error and code 1, instead of losing rows with no warning.</decision>
+    <decision id="d25" decided_by="owner (approved plan, 2026-11-06)" affects="RULES">A line with only spaces counts as a blank line in the ledger, as it already did in the holidays file.</decision>
+  </decision_log>
+  <open_questions />
+  <last_review date="2026-11-05" by="second-agent">
+    <check item="fields" result="fixed" />
+    <check item="rules" result="fixed" />
+    <check item="numbers" result="ok" />
+    <check item="messages" result="fixed" />
+    <check item="terms" result="fixed" />
+    <check item="language" result="ok" />
+  </last_review>
+  <last_check result="unverified">Official checker unavailable; network marked unverified; own script check of version 0.2 done (XML parse, unique ids, every ref resolves).</last_check>
+  <links>
+    <ref type="depends_on" from="file.index" to="GOAL.xml#goal.main" />
+  </links>
+</spec>

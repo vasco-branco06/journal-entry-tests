@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<spec id="file.motion" file="MOTION.xml" type="motion" project="journal-entry-tests" version="0.1" status="decided">
+  <no_animations reason="An Excel file and a command line have no animations." />
+  <links>
+    <ref type="depends_on" from="file.motion" to="GOAL.xml#goal.main" />
+  </links>
+</spec>

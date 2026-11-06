@@ -1,0 +1,211 @@
+<?xml version='1.0' encoding='utf-8'?>
+<spec id="file.rules" file="RULES.xml" type="rules" project="journal-entry-tests" version="0.2" status="decided">
+  <business_rules>
+    <rule id="rule.amount_cents">
+      <condition>An amount is read from the CSV.</condition>
+      <action>Convert to integer cents without using floating point.</action>
+      <exceptions>More than 2 decimal places: row rejected.</exceptions>
+      <source>Owner decision (Q1).</source>
+    </rule>
+    <rule id="rule.validation_rows">
+      <condition>A row has a missing value in a required column, a non-integer number, an invalid date, an invalid amount, an invalid entry_type or text longer than 255 characters.</condition>
+      <action>Reject the row, record row number and reason, and continue.</action>
+      <exceptions>Optional columns may be empty. Row validation never stops the analysis; file-level errors (encoding, missing columns) are covered by their own rules.</exceptions>
+      <source>Owner decision (Q1).</source>
+    </rule>
+    <rule id="rule.value_format">
+      <condition>A value is read from a required column or from entry_type.</condition>
+      <action>Accept only these exact ASCII formats. document_number: optional + or -, then digits. posting_date: 4 digits, hyphen, 2 digits, hyphen, 2 digits, and a real calendar date. amount: optional + or -, digits, then optionally a dot and digits. entry_type: exactly manual or automatic. Anything else rejects the row.</action>
+      <exceptions>Values are never trimmed: surrounding spaces reject document_number, posting_date, amount and entry_type, and a value with only spaces counts as missing. Forms accepted by Python parsers are rejected: 1_000, 1E+3, NaN, Infinity, 1250,40, .5, 5., non-ASCII digits, 20240131 and 2024-W05-3.</exceptions>
+      <source>Owner decision on strict formats (d14).</source>
+    </rule>
+    <rule id="rule.file_structure">
+      <condition>The CSV structure differs from the expected columns.</condition>
+      <action>Extra columns are ignored and column order is free. A row with a different number of fields from the header is rejected with the reason from the content file. A file with no header, including a 0-byte file, is missing all required columns: code 2. A required column named twice cannot be read: code 2. Broken quoting, meaning an unclosed quote or text after a closing quote, cannot be read: code 2.</action>
+      <exceptions>Blank lines, including lines with only spaces, are skipped, not rejected, and still count as lines for source_row. A quoted field may span lines; source_row is the line where the row starts.</exceptions>
+      <source>Owner decision on file structure (d15, d23, d25).</source>
+    </rule>
+    <rule id="rule.encoding">
+      <condition>The input file is not a comma-separated UTF-8 CSV (with or without BOM).</condition>
+      <action>Exit with code 2.</action>
+      <exceptions>None.</exceptions>
+      <source>Owner decision on file encoding (accepted recommendation).</source>
+    </rule>
+    <rule id="rule.duplicate">
+      <condition>Two or more accepted rows share the same account_code, the same signed amount and the same posting_date.</condition>
+      <action>Raise one alert for every row in the group.</action>
+      <exceptions>None.</exceptions>
+      <source>Owner decision (Q2, reading A).</source>
+    </rule>
+    <rule id="rule.round">
+      <condition>The absolute amount is greater than or equal to the base and is a multiple of the base (base 1000 by default).</condition>
+      <action>Raise an alert for the row.</action>
+      <exceptions>Amounts below the base or equal to zero.</exceptions>
+      <source>Owner decision (Q3).</source>
+    </rule>
+    <rule id="rule.weekend_holiday">
+      <condition>The posting_date is a Saturday or Sunday, or appears in the optional holidays file.</condition>
+      <action>Raise one alert for the row; the reason is holiday when the date is both a weekend and a holiday.</action>
+      <exceptions>Without a holidays file only weekends count.</exceptions>
+      <source>Owner decision (Q4, option 2).</source>
+    </rule>
+    <rule id="rule.holidays_format">
+      <condition>The holidays file has a line that is not a YYYY-MM-DD date.</condition>
+      <action>Exit with code 1 and name the line.</action>
+      <exceptions>Blank lines are ignored; there is no header; a BOM and repeated dates are allowed. A line that is not valid UTF-8 is an invalid line.</exceptions>
+      <source>Owner decision on invalid holidays (accepted recommendation).</source>
+    </rule>
+    <rule id="rule.gaps">
+      <condition>Integers exist between the minimum and maximum distinct document_number values that do not appear.</condition>
+      <action>Raise one alert per missing range, with the first missing number in document_number.</action>
+      <exceptions>Repeated numbers are ignored. Numbers of rows rejected by validation are not seen, so they can appear as gaps; the README states this.</exceptions>
+      <source>Owner decision (Q5).</source>
+    </rule>
+    <rule id="rule.benford_digit">
+      <condition>The Benford test runs.</condition>
+      <action>Use the first significant digit of the absolute amount; exclude amounts equal to zero.</action>
+      <exceptions>None.</exceptions>
+      <source>Owner decision (Q7).</source>
+    </rule>
+    <rule id="rule.benford_mad">
+      <condition>The Benford test runs.</condition>
+      <action>Compute the MAD over the 9 proportions and classify: below 0.006 close; from 0.006 up to but excluding 0.012 acceptable; from 0.012 up to but excluding 0.015 marginal; 0.015 or more non_conforming. Compute the chi-square for information only.</action>
+      <exceptions>None: the thresholds 0.012 and 0.015 themselves belong to the higher class.</exceptions>
+      <source>Owner decision (Q6); Nigrini (2012) thresholds, confirmed in two secondary sources.</source>
+    </rule>
+    <rule id="rule.benford_min_rows">
+      <condition>There are fewer than 1000 rows with a non-zero amount (configurable with --benford-min-rows).</condition>
+      <action>Do not run the test and show the text from the content file on the Benford sheet.</action>
+      <exceptions>None.</exceptions>
+      <source>Owner decision (Q7).</source>
+    </rule>
+    <rule id="rule.benford_alert">
+      <condition>The classification is marginal or non_conforming.</condition>
+      <action>Raise a single population-level alert, without source_row.</action>
+      <exceptions>A close or acceptable classification raises no alert.</exceptions>
+      <source>Owner decision on the Benford alert level (accepted recommendation).</source>
+    </rule>
+    <rule id="rule.aggregator">
+      <condition>Each test returned its table.</condition>
+      <action>Concatenate into the common alert format and sort by test_id and source_row; alerts without source_row sort last within their test.</action>
+      <exceptions>None.</exceptions>
+      <source>Owner decision (guide, section 6).</source>
+    </rule>
+    <rule id="rule.exit_codes">
+      <condition>The program ends.</condition>
+      <action>Code 0 on success (even with alerts); 1 for incorrect usage (including a non-positive --round-base or --benford-min-rows), missing file, unwritable or locked output, existing output file, invalid holidays file or too many rows for one Excel sheet; 2 for missing required columns or an unreadable file.</action>
+      <exceptions>The default argparse exit code 2 for usage errors is overridden to 1. When several errors apply, the first in this order wins: usage, missing file, existing output file, unwritable folder, invalid holidays file, unreadable file, missing required columns, too many rows for one Excel sheet.</exceptions>
+      <source>Owner decision (Q9).</source>
+    </rule>
+    <rule id="rule.overwrite">
+      <condition>results.xlsx already exists in the output folder.</condition>
+      <action>Exit with code 1 unless --overwrite was given.</action>
+      <exceptions>None.</exceptions>
+      <source>Owner decision on overwriting (accepted recommendation).</source>
+    </rule>
+    <rule id="rule.formula_neutralize">
+      <condition>A text written to Excel starts with =, +, - or @.</condition>
+      <action>Write it as literal text, not as a formula.</action>
+      <exceptions>Formula cells created by the program itself.</exceptions>
+      <source>Security file.</source>
+    </rule>
+    <rule id="rule.excel_writing">
+      <condition>The workbook is written.</condition>
+      <action>Write input text with write_string, never with write, which turns text into formulas and links. Give every formula cell its computed value, because XlsxWriter otherwise stores 0. Cut text to 32767 characters. Show the empty message at A3 instead of a table, because add_table needs one data row. Write to a temporary file in the output folder and move it with os.replace.</action>
+      <exceptions>If writing or replacing fails, including when Excel holds the output file open: remove the temporary file, keep any previous results.xlsx, and exit with code 1 and the output directory error. A sheet holds at most 1048573 table rows, because the table starts at row 3: above that, write nothing and exit with code 1 and the too many rows error, naming the sheet.</exceptions>
+      <source>Behaviour tested on XlsxWriter 3.3.1 and Windows 11 (d16, d24).</source>
+    </rule>
+    <rule id="rule.alert_notice">
+      <condition>The workbook and the README are produced.</condition>
+      <action>Show the warning that an alert is a suspicion and not proof of fraud.</action>
+      <exceptions>None.</exceptions>
+      <source>Owner request (brief, section 2).</source>
+    </rule>
+    <rule id="rule.no_real_data">
+      <condition>A file is added to the repository.</condition>
+      <action>It may contain only synthetic data; never keys, passwords or tokens.</action>
+      <exceptions>None.</exceptions>
+      <source>Owner rule.</source>
+    </rule>
+    <rule id="rule.generator_outside_repo">
+      <condition>The public repository is prepared.</condition>
+      <action>The data generator lives in a separate private project; the repository carries only small synthetic files in tests/fixtures (ledger_clean.csv, ledger_planted.csv, ground_truth.csv, holidays.csv).</action>
+      <exceptions>None.</exceptions>
+      <source>Owner decision (Q16).</source>
+    </rule>
+  </business_rules>
+  <edge_cases>
+    <case>File with only a header: treated as a ledger with no valid rows.</case>
+    <case>Text longer than 255 characters: row rejected.</case>
+    <case>Amounts equal to zero: valid, excluded from the round and Benford tests.</case>
+    <case>Repeated entry_id: distinct rows, identified by source_row.</case>
+    <case>Small ledgers: near the Benford minimum, a ledger that follows Benford can still be flagged; the README and the Benford sheet say so, and the thresholds do not change.</case>
+    <case>Timezone: not applicable, dates only.</case>
+    <case>Currency: a single one, no conversion. Locale: decimal point only.</case>
+    <case>Binary file or other encoding: exit code 2.</case>
+    <case>Concurrency: not applicable, single process.</case>
+    <case>Offline: the program never uses the network.</case>
+  </edge_cases>
+  <priority_order>Execution order: read, validate, tests, aggregate, write. A validation rule takes precedence over the tests.</priority_order>
+  <error_policy>Short English errors on stderr with the exit code from the exit code rule; nothing is left half written.</error_policy>
+  <retention>The program retains nothing. Output files belong to the user.</retention>
+  <privacy>Only synthetic data in the repository; the user's ledger never leaves the computer; no network calls.</privacy>
+  <links>
+    <ref type="depends_on" from="file.rules" to="GOAL.xml#goal.main" />
+    <ref type="implements" from="rule.amount_cents" to="GOAL.xml#goal.main" />
+    <ref type="uses" from="rule.amount_cents" to="CONTENT.xml#str.rej_decimals" />
+    <ref type="uses" from="rule.amount_cents" to="CONTENT.xml#str.rej_bad_amount" />
+    <ref type="implements" from="rule.validation_rows" to="GOAL.xml#goal.main" />
+    <ref type="uses" from="rule.validation_rows" to="CONTENT.xml#str.rej_missing_value" />
+    <ref type="uses" from="rule.validation_rows" to="CONTENT.xml#str.rej_bad_integer" />
+    <ref type="uses" from="rule.validation_rows" to="CONTENT.xml#str.rej_bad_date" />
+    <ref type="uses" from="rule.validation_rows" to="CONTENT.xml#str.rej_bad_entry_type" />
+    <ref type="uses" from="rule.validation_rows" to="CONTENT.xml#str.rej_too_long" />
+    <ref type="implements" from="rule.encoding" to="RULES.xml#rule.validation_rows" />
+    <ref type="uses" from="rule.encoding" to="CONTENT.xml#str.err_unreadable" />
+    <ref type="implements" from="rule.duplicate" to="GOAL.xml#crit.recall" />
+    <ref type="uses" from="rule.duplicate" to="CONTENT.xml#str.reason_duplicate" />
+    <ref type="implements" from="rule.round" to="GOAL.xml#crit.recall" />
+    <ref type="uses" from="rule.round" to="CONTENT.xml#str.reason_round" />
+    <ref type="implements" from="rule.weekend_holiday" to="GOAL.xml#crit.recall" />
+    <ref type="uses" from="rule.weekend_holiday" to="CONTENT.xml#str.reason_weekend" />
+    <ref type="uses" from="rule.weekend_holiday" to="CONTENT.xml#str.reason_holiday" />
+    <ref type="implements" from="rule.holidays_format" to="RULES.xml#rule.weekend_holiday" />
+    <ref type="uses" from="rule.holidays_format" to="CONTENT.xml#str.err_holidays" />
+    <ref type="implements" from="rule.gaps" to="GOAL.xml#crit.recall" />
+    <ref type="uses" from="rule.gaps" to="CONTENT.xml#str.reason_gap" />
+    <ref type="implements" from="rule.benford_digit" to="GOAL.xml#crit.recall" />
+    <ref type="uses" from="rule.benford_digit" to="CONTENT.xml#str.reason_benford" />
+    <ref type="implements" from="rule.benford_mad" to="GOAL.xml#crit.recall" />
+    <ref type="implements" from="rule.benford_min_rows" to="RULES.xml#rule.benford_mad" />
+    <ref type="uses" from="rule.benford_min_rows" to="CONTENT.xml#str.benford_skip" />
+    <ref type="implements" from="rule.benford_alert" to="RULES.xml#rule.benford_mad" />
+    <ref type="implements" from="rule.aggregator" to="GOAL.xml#goal.main" />
+    <ref type="implements" from="rule.exit_codes" to="GOAL.xml#crit.exit_codes" />
+    <ref type="uses" from="rule.exit_codes" to="CONTENT.xml#str.err_usage" />
+    <ref type="uses" from="rule.exit_codes" to="CONTENT.xml#str.err_missing_file" />
+    <ref type="uses" from="rule.exit_codes" to="CONTENT.xml#str.err_missing_columns" />
+    <ref type="uses" from="rule.exit_codes" to="CONTENT.xml#str.err_out_dir" />
+    <ref type="uses" from="rule.exit_codes" to="CONTENT.xml#str.err_exists" />
+    <ref type="uses" from="rule.exit_codes" to="CONTENT.xml#str.msg_done" />
+    <ref type="uses" from="rule.exit_codes" to="CONTENT.xml#str.msg_empty" />
+    <ref type="implements" from="rule.overwrite" to="GOAL.xml#goal.main" />
+    <ref type="implements" from="rule.formula_neutralize" to="GOAL.xml#goal.main" />
+    <ref type="implements" from="rule.alert_notice" to="GOAL.xml#crit.readme" />
+    <ref type="uses" from="rule.alert_notice" to="CONTENT.xml#str.warning" />
+    <ref type="implements" from="rule.no_real_data" to="GOAL.xml#goal.main" />
+    <ref type="implements" from="rule.generator_outside_repo" to="GOAL.xml#goal.main" />
+    <ref type="implements" from="rule.value_format" to="GOAL.xml#goal.main" />
+    <ref type="uses" from="rule.value_format" to="CONTENT.xml#str.rej_bad_integer" />
+    <ref type="uses" from="rule.value_format" to="CONTENT.xml#str.rej_bad_date" />
+    <ref type="uses" from="rule.value_format" to="CONTENT.xml#str.rej_bad_amount" />
+    <ref type="implements" from="rule.file_structure" to="GOAL.xml#goal.main" />
+    <ref type="uses" from="rule.file_structure" to="CONTENT.xml#str.rej_field_count" />
+    <ref type="uses" from="rule.file_structure" to="CONTENT.xml#str.err_missing_columns" />
+    <ref type="uses" from="rule.file_structure" to="CONTENT.xml#str.err_unreadable" />
+    <ref type="implements" from="rule.excel_writing" to="GOAL.xml#crit.workbook" />
+    <ref type="uses" from="rule.excel_writing" to="CONTENT.xml#str.err_out_dir" />
+    <ref type="uses" from="rule.excel_writing" to="CONTENT.xml#str.err_too_many_rows" />
+    <ref type="uses" from="rule.exit_codes" to="CONTENT.xml#str.err_too_many_rows" />
+  </links>
+</spec>

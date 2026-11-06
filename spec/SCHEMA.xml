@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='utf-8'?>
+<spec id="file.schema" file="SCHEMA.xml" type="schema" project="journal-entry-tests" version="0.2" status="decided">
+  <note>There is no database. Tables exist as in-memory DataFrames and as Excel tables. Migrations, backup and restore do not apply.</note>
+  <tables>
+    <table id="table.ledger_input">
+      <description>Columns of the input CSV.</description>
+      <field id="field.in.entry_id" name="entry_id" type="text(255)" nullable="false" default="none" unique="false" index="false">Entry identifier; may repeat across rows.</field>
+      <field id="field.in.document_number" name="document_number" type="integer in the format of rule.value_format" nullable="false" default="none" unique="false" index="false">Document number.</field>
+      <field id="field.in.posting_date" name="posting_date" type="date YYYY-MM-DD in the format of rule.value_format" nullable="false" default="none" unique="false" index="false">Posting date.</field>
+      <field id="field.in.account_code" name="account_code" type="text(255)" nullable="false" default="none" unique="false" index="false">Account.</field>
+      <field id="field.in.amount" name="amount" type="decimal with optional sign, up to 2 decimals, in the format of rule.value_format" nullable="false" default="none" unique="false" index="false">Debit positive, credit negative.</field>
+      <field id="field.in.description" name="description" type="text(255)" nullable="true" default="empty" unique="false" index="false">Optional.</field>
+      <field id="field.in.user_id" name="user_id" type="text(255)" nullable="true" default="empty" unique="false" index="false">Optional.</field>
+      <field id="field.in.entry_type" name="entry_type" type="enum entry_type" nullable="true" default="empty" unique="false" index="false">Optional: manual or automatic.</field>
+    </table>
+    <table id="table.ledger_valid">
+      <description>Accepted rows, in memory, after validation.</description>
+      <field id="field.valid.source_row" name="source_row" type="integer" nullable="false" default="none" unique="true" index="true">Line of the CSV where the row starts; the header is line 1.</field>
+      <field id="field.valid.amount_cents" name="amount_cents" type="integer" nullable="false" default="none" unique="false" index="false">Amount in integer cents.</field>
+    </table>
+    <table id="table.rejected_row">
+      <description>Rejected rows, written to the Rejected rows sheet.</description>
+      <field id="field.rej.source_row" name="source_row" type="integer" nullable="false" default="none" unique="true" index="false">Row number in the CSV.</field>
+      <field id="field.rej.reason" name="reason" type="text" nullable="false" default="none" unique="false" index="false">Reason, text from the content file.</field>
+      <field id="field.rej.raw" name="raw_line" type="text" nullable="false" default="none" unique="false" index="false">Original row, neutralised when written to Excel and cut to the 32767 characters of an Excel cell.</field>
+    </table>
+    <table id="table.alert">
+      <description>Common format returned by each test and by the aggregator.</description>
+      <field id="field.alert.test_id" name="test_id" type="enum test_id" nullable="false" default="none" unique="false" index="true">Originating test.</field>
+      <field id="field.alert.source_row" name="source_row" type="integer" nullable="true" default="empty" unique="false" index="false">Empty for population-level alerts (Benford) and for gaps.</field>
+      <field id="field.alert.entry_id" name="entry_id" type="text" nullable="true" default="empty" unique="false" index="false">Empty when there is no row.</field>
+      <field id="field.alert.document_number" name="document_number" type="integer" nullable="true" default="empty" unique="false" index="false">For gaps, the first missing number.</field>
+      <field id="field.alert.reason" name="reason" type="text" nullable="false" default="none" unique="false" index="false">Reason, text from the content file.</field>
+      <field id="field.alert.detail" name="detail" type="text" nullable="true" default="empty" unique="false" index="false">Short detail.</field>
+    </table>
+    <table id="table.benford_result">
+      <description>Result of the Benford test, written to the Benford sheet.</description>
+      <field id="field.bf.n_rows" name="n_rows" type="integer" nullable="false" default="none" unique="false" index="false">Rows used (zeros excluded).</field>
+      <field id="field.bf.mad" name="mad" type="decimal" nullable="true" default="empty" unique="false" index="false">Empty if the test did not run.</field>
+      <field id="field.bf.chi2" name="chi2" type="decimal" nullable="true" default="empty" unique="false" index="false">Informational.</field>
+      <field id="field.bf.p_value" name="p_value" type="decimal" nullable="true" default="empty" unique="false" index="false">Informational.</field>
+      <field id="field.bf.classification" name="classification" type="enum classification" nullable="true" default="empty" unique="false" index="false">close, acceptable, marginal or non_conforming.</field>
+      <field id="field.bf.digit_counts" name="digit_counts" type="9 integers (digits 1 to 9)" nullable="true" default="empty" unique="false" index="false">Counts by first digit.</field>
+    </table>
+    <table id="table.holidays_input">
+      <description>Optional holidays file.</description>
+      <field id="field.hol.date" name="holiday_date" type="date YYYY-MM-DD" nullable="false" default="none" unique="false" index="false">One date per line, no header; UTF-8 with or without BOM; repeated dates are allowed.</field>
+    </table>
+  </tables>
+  <enums>
+    <enum name="entry_type">manual, automatic</enum>
+    <enum name="test_id">duplicates, round, weekend, gaps, benford</enum>
+    <enum name="classification">close, acceptable, marginal, non_conforming</enum>
+  </enums>
+  <relations>
+    <relation cardinality="many-to-one">The source_row field of alerts refers to the source_row field of accepted rows, many to one, no deletion (in-memory data).</relation>
+  </relations>
+  <naming>Field names in English, snake_case.</naming>
+  <seed_data>Synthetic files in tests/fixtures: ledger_clean.csv and ledger_planted.csv (about 1200 rows each), ground_truth.csv (columns test_id, source_row and document_number, one line per planted problem: source_row for duplicates, round and weekend; document_number with the first missing number for gaps; both empty for benford) and holidays.csv (one date per line).</seed_data>
+  <audit_fields>No audit fields; the program keeps no state.</audit_fields>
+  <migration_order>Not applicable: no database.</migration_order>
+  <backup_restore>Not applicable: the user keeps their own files.</backup_restore>
+  <permissions>
+    <permission id="perm.read_input" operation="read">Read the input CSV and the holidays CSV.</permission>
+    <permission id="perm.write_output" operation="write">Write results.xlsx to the output folder.</permission>
+    <permission id="perm.publish_repo" operation="write">Publish the repository and releases on GitHub.</permission>
+  </permissions>
+  <links>
+    <ref type="depends_on" from="file.schema" to="GOAL.xml#goal.main" />
+    <ref type="depends_on" from="field.in.entry_id" to="SCHEMA.xml#table.ledger_input" />
+    <ref type="depends_on" from="field.in.document_number" to="SCHEMA.xml#table.ledger_input" />
+    <ref type="depends_on" from="field.in.posting_date" to="SCHEMA.xml#table.ledger_input" />
+    <ref type="depends_on" from="field.in.account_code" to="SCHEMA.xml#table.ledger_input" />
+    <ref type="depends_on" from="field.in.amount" to="SCHEMA.xml#table.ledger_input" />
+    <ref type="depends_on" from="field.in.description" to="SCHEMA.xml#table.ledger_input" />
+    <ref type="depends_on" from="field.in.user_id" to="SCHEMA.xml#table.ledger_input" />
+    <ref type="depends_on" from="field.in.entry_type" to="SCHEMA.xml#table.ledger_input" />
+    <ref type="depends_on" from="field.valid.source_row" to="SCHEMA.xml#table.ledger_valid" />
+    <ref type="depends_on" from="field.valid.amount_cents" to="SCHEMA.xml#table.ledger_valid" />
+    <ref type="depends_on" from="field.rej.source_row" to="SCHEMA.xml#table.rejected_row" />
+    <ref type="depends_on" from="field.rej.reason" to="SCHEMA.xml#table.rejected_row" />
+    <ref type="depends_on" from="field.rej.raw" to="SCHEMA.xml#table.rejected_row" />
+    <ref type="depends_on" from="field.alert.test_id" to="SCHEMA.xml#table.alert" />
+    <ref type="depends_on" from="field.alert.source_row" to="SCHEMA.xml#table.alert" />
+    <ref type="depends_on" from="field.alert.entry_id" to="SCHEMA.xml#table.alert" />
+    <ref type="depends_on" from="field.alert.document_number" to="SCHEMA.xml#table.alert" />
+    <ref type="depends_on" from="field.alert.reason" to="SCHEMA.xml#table.alert" />
+    <ref type="depends_on" from="field.alert.detail" to="SCHEMA.xml#table.alert" />
+    <ref type="depends_on" from="field.bf.n_rows" to="SCHEMA.xml#table.benford_result" />
+    <ref type="depends_on" from="field.bf.mad" to="SCHEMA.xml#table.benford_result" />
+    <ref type="depends_on" from="field.bf.chi2" to="SCHEMA.xml#table.benford_result" />
+    <ref type="depends_on" from="field.bf.p_value" to="SCHEMA.xml#table.benford_result" />
+    <ref type="depends_on" from="field.bf.classification" to="SCHEMA.xml#table.benford_result" />
+    <ref type="depends_on" from="field.bf.digit_counts" to="SCHEMA.xml#table.benford_result" />
+    <ref type="depends_on" from="field.hol.date" to="SCHEMA.xml#table.holidays_input" />
+    <ref type="depends_on" from="perm.read_input" to="GOAL.xml#role.user" />
+    <ref type="depends_on" from="perm.write_output" to="GOAL.xml#role.user" />
+    <ref type="depends_on" from="perm.publish_repo" to="GOAL.xml#role.maintainer" />
+    <ref type="uses" from="table.ledger_input" to="CONTENT.xml#str.rej_bad_date" />
+  </links>
+</spec>

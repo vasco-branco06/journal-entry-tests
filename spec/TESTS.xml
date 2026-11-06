@@ -1,0 +1,423 @@
+<?xml version='1.0' encoding='utf-8'?>
+<spec id="file.tests" file="TESTS.xml" type="tests" project="journal-entry-tests" version="0.2" status="decided">
+  <ambiguities>
+    <ambiguity id="amb.duplicate_reading" kind="decision" status="decided" decided_by="owner">
+      <scenario>When are two rows duplicates?</scenario>
+      <outcome>Same account, amount and date</outcome>
+      <outcome>Same document</outcome>
+      <expected>Same account, amount and date.</expected>
+      <recommendation>Same account, amount and date.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.round_definition" kind="decision" status="decided" decided_by="owner">
+      <scenario>What counts as a round value?</scenario>
+      <outcome>A multiple of 1000 with absolute value of 1000 or more</outcome>
+      <outcome>Any multiple of 100</outcome>
+      <expected>A multiple of 1000, configurable base.</expected>
+      <recommendation>A multiple of 1000.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.weekend_holidays" kind="decision" status="decided" decided_by="owner">
+      <scenario>Do holidays enter the weekend test?</scenario>
+      <outcome>Weekends only</outcome>
+      <outcome>Weekends plus holidays from an optional CSV</outcome>
+      <expected>Weekends plus holidays from an optional CSV.</expected>
+      <recommendation>Option 2.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.gap_repeats" kind="decision" status="decided" decided_by="owner">
+      <scenario>How are repeated document numbers treated in the gaps test?</scenario>
+      <outcome>Count repeats as gaps</outcome>
+      <outcome>Ignore repeats</outcome>
+      <expected>Ignore repeats; they belong to the duplicates test.</expected>
+      <recommendation>Ignore them.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.mad_vs_chi" kind="decision" status="decided" decided_by="owner">
+      <scenario>Which criterion decides the Benford result?</scenario>
+      <outcome>Chi-square</outcome>
+      <outcome>MAD</outcome>
+      <expected>MAD, with chi-square for information only.</expected>
+      <recommendation>MAD.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.benford_min_rows" kind="assumption" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>What is the minimum number of rows for Benford?</scenario>
+      <outcome>500</outcome>
+      <outcome>1000</outcome>
+      <outcome>5000</outcome>
+      <expected>1000, configurable.</expected>
+      <recommendation>1000.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.round_base" kind="assumption" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>What is the default round base?</scenario>
+      <outcome>100</outcome>
+      <outcome>1000</outcome>
+      <expected>1000, configurable.</expected>
+      <recommendation>1000.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.generator_location" kind="decision" status="decided" decided_by="owner">
+      <scenario>Where does the generator live?</scenario>
+      <outcome>In the public repository</outcome>
+      <outcome>In a separate private project, with small synthetic files in the repository</outcome>
+      <expected>Separate private project.</expected>
+      <recommendation>Separate private project.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.word_scope" kind="decision" status="decided" decided_by="owner">
+      <scenario>Does the Word report enter version 1?</scenario>
+      <outcome>Yes</outcome>
+      <outcome>No, optional final unit</outcome>
+      <expected>No, it stays outside v1.</expected>
+      <recommendation>Outside v1.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.repeated_entry_id" kind="decision" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>An entry_id appears on several rows (lines of the same entry).</scenario>
+      <outcome>Treat each row separately and identify it by source_row</outcome>
+      <outcome>Reject a repeated entry_id</outcome>
+      <expected>Each row is treated separately; alerts carry source_row.</expected>
+      <recommendation>Treat separately, with source_row in the alerts, because an entry has several lines.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.decimals" kind="decision" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>An amount has more than 2 decimal places.</scenario>
+      <outcome>Reject the row</outcome>
+      <outcome>Round to 2 places</outcome>
+      <expected>Reject the row.</expected>
+      <recommendation>Reject, so data is not altered silently.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.decimal_comma" kind="decision" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>An amount uses a decimal comma, such as 1250,40.</scenario>
+      <outcome>Reject the row</outcome>
+      <outcome>Accept the comma</outcome>
+      <expected>Reject; decimal point only.</expected>
+      <recommendation>Reject and document it in the README.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.empty_file" kind="decision" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>A CSV with only a header.</scenario>
+      <outcome>Exit code 0 with empty sheets</outcome>
+      <outcome>Exit code 2 as an error</outcome>
+      <expected>Exit code 0, empty sheets and the message from the content file.</expected>
+      <recommendation>Exit code 0, because an empty ledger is a valid result.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.benford_alert_level" kind="decision" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>When does Benford raise an alert?</scenario>
+      <outcome>Only non_conforming</outcome>
+      <outcome>Marginal or non_conforming</outcome>
+      <expected>Marginal or non_conforming.</expected>
+      <recommendation>Marginal or non_conforming, because this is triage and early flags are useful.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.overwrite" kind="decision" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>results.xlsx already exists.</scenario>
+      <outcome>Overwrite silently</outcome>
+      <outcome>Refuse unless --overwrite is given</outcome>
+      <expected>Refuse with code 1 unless --overwrite is given.</expected>
+      <recommendation>Refuse, as the safest option.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.runtime" kind="assumption" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>What analysis time is acceptable for 100000 rows?</scenario>
+      <outcome>30 s</outcome>
+      <outcome>60 s</outcome>
+      <outcome>No limit</outcome>
+      <expected>60000 ms or less.</expected>
+      <recommendation>60 s, which is generous for pandas.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.encoding" kind="decision" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>CSV encoding and separator.</scenario>
+      <outcome>UTF-8 with comma, with or without BOM</outcome>
+      <outcome>Detect automatically</outcome>
+      <expected>UTF-8 with comma; anything else exits with code 2.</expected>
+      <recommendation>UTF-8 with comma, because it is simple and predictable.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.max_text" kind="decision" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>A text column is very long.</scenario>
+      <outcome>Reject above 255 characters</outcome>
+      <outcome>Accept everything</outcome>
+      <expected>Reject above 255 characters.</expected>
+      <recommendation>Reject, to protect Excel.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.holidays_format" kind="decision" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>The holidays file has an invalid line.</scenario>
+      <outcome>Exit code 1 naming the line</outcome>
+      <outcome>Ignore the line</outcome>
+      <expected>Exit code 1 naming the line.</expected>
+      <recommendation>Exit code 1, so it does not fail silently.</recommendation>
+    </ambiguity>
+    <ambiguity id="amb.fixtures_size" kind="assumption" status="decided" decided_by="owner (accepted recommendation)">
+      <scenario>Size of the test files.</scenario>
+      <outcome>200 rows</outcome>
+      <outcome>1200 rows</outcome>
+      <expected>About 1200 rows each, so Benford runs with the default minimum.</expected>
+      <recommendation>1200 rows.</recommendation>
+    </ambiguity>
+  </ambiguities>
+  <tests>
+    <test id="test.fixture_recall" status="decided" kind="automated">
+      <given>ledger_planted.csv and ground_truth.csv.</given>
+      <when>Run analyze with --holidays tests/fixtures/holidays.csv.</when>
+      <pass>Every problem in the ground truth appears in the alerts (100 percent). Matching: duplicates, round and weekend by test_id and source_row; gaps by test_id and document_number; benford by test_id.</pass>
+      <fail>Any alert is missing.</fail>
+    </test>
+    <test id="test.fixture_clean" status="decided" kind="automated">
+      <given>ledger_clean.csv.</given>
+      <when>Run analyze.</when>
+      <pass>Zero alerts from the four tests other than Benford.</pass>
+      <fail>Any alert.</fail>
+    </test>
+    <test id="test.exit_codes" status="decided" kind="automated">
+      <given>A valid file, a missing file, and a file without required columns.</given>
+      <when>Run analyze on the three cases.</when>
+      <pass>Exit codes 0, 1 and 2.</pass>
+      <fail>Any other code.</fail>
+    </test>
+    <test id="test.workbook_sheets" status="decided" kind="automated">
+      <given>The output of analyze.</given>
+      <when>Open results.xlsx.</when>
+      <pass>Exactly 8 sheets with the names from the content file.</pass>
+      <fail>A different number or different names.</fail>
+    </test>
+    <test id="test.runtime" status="decided" kind="automated">
+      <given>A 100000-row synthetic ledger built inside the test with a few lines of NumPy (not the private generator).</given>
+      <when>Run analyze.</when>
+      <pass>60000 ms or less.</pass>
+      <fail>More than 60000 ms.</fail>
+    </test>
+    <test id="test.readme_checklist" status="decided" kind="manual">
+      <given>The final README.</given>
+      <when>Review the 5 items of the checklist in the goal file.</when>
+      <pass>5 of 5 items present.</pass>
+      <fail>Any item missing.</fail>
+    </test>
+    <test id="test.no_network" status="decided" kind="automated">
+      <given>Sockets blocked inside the test.</given>
+      <when>Run analyze.</when>
+      <pass>Finishes successfully without trying to connect.</pass>
+      <fail>A connection attempt.</fail>
+    </test>
+    <test id="test.budget_zero" status="decided" kind="manual">
+      <given>The real invoices of the month.</given>
+      <when>Sum the project costs.</when>
+      <pass>0 EUR or less.</pass>
+      <fail>Any cost.</fail>
+    </test>
+    <test id="test.ci_matrix" status="decided" kind="manual">
+      <given>A pull request on GitHub.</given>
+      <when>Check the Actions result.</when>
+      <pass>Green on 3.11 and 3.14, on Ubuntu and on Windows (4 jobs).</pass>
+      <fail>Red on any job.</fail>
+    </test>
+    <test id="test.no_real_data" status="decided" kind="manual">
+      <given>The files in tests/fixtures and a search for secret patterns.</given>
+      <when>Review before publishing.</when>
+      <pass>Zero real records and zero secrets.</pass>
+      <fail>Any found.</fail>
+    </test>
+    <test id="test.amount_cents" status="decided" kind="automated">
+      <given>Amounts 0.10 and 0.20, one with 3 decimal places, and 1_000, 1E+3, NaN, Infinity, 1250,40, .5 and 5.</given>
+      <when>Validate.</when>
+      <pass>Integers 10 and 20; all the others are rejected.</pass>
+      <fail>A rounding error or any of the others accepted.</fail>
+    </test>
+    <test id="test.validation_rows" status="decided" kind="automated">
+      <given>Rows with an invalid date, the dates 20240131 and 2024-W05-3, the document number 1_000, a document number in non-ASCII digits, an empty id and a 300-character text.</given>
+      <when>Validate.</when>
+      <pass>Rejected with row number and reason; the analysis continues.</pass>
+      <fail>It stops or records no reason.</fail>
+    </test>
+    <test id="test.benford_mad" status="decided" kind="automated">
+      <given>Distributions with MAD 0.005, 0.010, 0.014 and 0.020, and exact values 0.012 and 0.015.</given>
+      <when>Classify.</when>
+      <pass>close, acceptable, marginal and non_conforming; 0.012 and 0.015 go to the higher class.</pass>
+      <fail>A wrong class.</fail>
+    </test>
+    <test id="test.benford_min_rows" status="decided" kind="automated">
+      <given>Ledgers of 999 and of 1000 rows.</given>
+      <when>Run Benford.</when>
+      <pass>999 does not run and shows the text; 1000 runs.</pass>
+      <fail>It runs with 999.</fail>
+    </test>
+    <test id="test.round_base" status="decided" kind="automated">
+      <given>Amounts 999.99, 1000, 5000 and -2000 with base 1000, then base 500.</given>
+      <when>Run the test.</when>
+      <pass>Alerts on 1000, 5000 and -2000; with base 500 also on other multiples of 500.</pass>
+      <fail>An alert on 999.99.</fail>
+    </test>
+    <test id="test.holidays" status="decided" kind="automated">
+      <given>A holidays file with one valid and one invalid line.</given>
+      <when>Run analyze.</when>
+      <pass>With the invalid line, exit code 1 naming the line.</pass>
+      <fail>The line is ignored.</fail>
+    </test>
+    <test id="test.aggregator" status="decided" kind="automated">
+      <given>Alerts from two tests.</given>
+      <when>Aggregate.</when>
+      <pass>One table in the common alert format, sorted.</pass>
+      <fail>Different columns or order.</fail>
+    </test>
+    <test id="test.formula_neutralize" status="decided" kind="automated">
+      <given>A description equal to =SUM(A1).</given>
+      <when>Write the workbook.</when>
+      <pass>The cell holds literal text, not a formula.</pass>
+      <fail>The cell is a formula.</fail>
+    </test>
+    <test id="test.overwrite" status="decided" kind="automated">
+      <given>results.xlsx already exists.</given>
+      <when>Run with and without --overwrite.</when>
+      <pass>Without the option: code 1; with it: the file is replaced.</pass>
+      <fail>It is replaced without the option.</fail>
+    </test>
+    <test id="test.states_analyze" status="decided" kind="automated">
+      <given>Five situations of analyze.</given>
+      <when>Run each one.</when>
+      <pass>Message and exit code of each state match the content file.</pass>
+      <fail>A different message or code.</fail>
+    </test>
+    <test id="test.states_sheets" status="decided" kind="automated">
+      <given>Results with and without alerts.</given>
+      <when>Open the sheets.</when>
+      <pass>The success and empty states match the content file.</pass>
+      <fail>A blank sheet with no message.</fail>
+    </test>
+    <test id="test.design_contrast" status="decided" kind="manual">
+      <given>The colour table of the design file.</given>
+      <when>Check the contrast.</when>
+      <pass>Every pair at 4.5 or more.</pass>
+      <fail>Any pair below.</fail>
+    </test>
+    <test id="test.publish_permission" status="decided" kind="manual">
+      <given>The maintainer account.</given>
+      <when>Publish the tag.</when>
+      <pass>Only the maintainer can.</pass>
+      <fail>Another user can.</fail>
+    </test>
+    <test id="test.file_structure" status="decided" kind="automated">
+      <given>A CSV with extra and reordered columns, rows with too few and too many fields, a blank line and a multi-line quoted field; a 0-byte file; a file with a required column named twice.</given>
+      <when>Validate.</when>
+      <pass>Extra columns ignored, bad rows rejected with the reason, source_row is the line where each row starts; the last two files give code 2.</pass>
+      <fail>A crash, a wrong source_row or another code.</fail>
+    </test>
+    <test id="test.content_sync" status="decided" kind="automated">
+      <given>content.py and spec/CONTENT.xml.</given>
+      <when>Compare every string.</when>
+      <pass>Same ids and same text.</pass>
+      <fail>Any difference.</fail>
+    </test>
+    <test id="test.excel_writing" status="decided" kind="automated">
+      <given>A description that is a URL, a rejected row of 40000 characters, zero alerts, and os.replace forced to raise PermissionError.</given>
+      <when>Write the workbook.</when>
+      <pass>The URL is plain text; the raw line has 32767 characters; Summary formulas read the right value with openpyxl data_only; the empty sheet has its message; the forced failure gives code 1, no temporary file and the previous file intact.</pass>
+      <fail>Any of these differs.</fail>
+    </test>
+    <test id="test.word_scope" status="decided" kind="manual">
+      <given>The list of v1 units.</given>
+      <when>Review it.</when>
+      <pass>No Word unit in v1.</pass>
+      <fail>A Word unit is in v1.</fail>
+    </test>
+  </tests>
+  <links>
+    <ref type="depends_on" from="file.tests" to="GOAL.xml#goal.main" />
+    <ref type="depends_on" from="amb.duplicate_reading" to="RULES.xml#rule.duplicate" />
+    <ref type="depends_on" from="amb.round_definition" to="RULES.xml#rule.round" />
+    <ref type="depends_on" from="amb.weekend_holidays" to="RULES.xml#rule.weekend_holiday" />
+    <ref type="depends_on" from="amb.gap_repeats" to="RULES.xml#rule.gaps" />
+    <ref type="depends_on" from="amb.mad_vs_chi" to="RULES.xml#rule.benford_mad" />
+    <ref type="depends_on" from="amb.benford_min_rows" to="RULES.xml#rule.benford_min_rows" />
+    <ref type="depends_on" from="amb.round_base" to="RULES.xml#rule.round" />
+    <ref type="depends_on" from="amb.generator_location" to="RULES.xml#rule.generator_outside_repo" />
+    <ref type="depends_on" from="amb.word_scope" to="GOAL.xml#scope.out" />
+    <ref type="depends_on" from="amb.repeated_entry_id" to="RULES.xml#rule.duplicate" />
+    <ref type="depends_on" from="amb.decimals" to="RULES.xml#rule.amount_cents" />
+    <ref type="depends_on" from="amb.decimal_comma" to="RULES.xml#rule.amount_cents" />
+    <ref type="depends_on" from="amb.empty_file" to="RULES.xml#rule.validation_rows" />
+    <ref type="depends_on" from="amb.benford_alert_level" to="RULES.xml#rule.benford_alert" />
+    <ref type="depends_on" from="amb.overwrite" to="RULES.xml#rule.overwrite" />
+    <ref type="depends_on" from="amb.runtime" to="GOAL.xml#crit.runtime" />
+    <ref type="depends_on" from="amb.encoding" to="RULES.xml#rule.encoding" />
+    <ref type="depends_on" from="amb.max_text" to="RULES.xml#rule.validation_rows" />
+    <ref type="depends_on" from="amb.holidays_format" to="RULES.xml#rule.holidays_format" />
+    <ref type="depends_on" from="amb.fixtures_size" to="SCHEMA.xml#table.ledger_input" />
+    <ref type="tests" from="test.fixture_recall" to="GOAL.xml#crit.recall" />
+    <ref type="tests" from="test.fixture_recall" to="RULES.xml#rule.duplicate" />
+    <ref type="tests" from="test.fixture_recall" to="RULES.xml#rule.round" />
+    <ref type="tests" from="test.fixture_recall" to="RULES.xml#rule.weekend_holiday" />
+    <ref type="tests" from="test.fixture_recall" to="RULES.xml#rule.gaps" />
+    <ref type="tests" from="test.fixture_recall" to="RULES.xml#rule.benford_digit" />
+    <ref type="tests" from="test.fixture_recall" to="RULES.xml#rule.benford_alert" />
+    <ref type="tests" from="test.fixture_recall" to="GOAL.xml#outcome.main" />
+    <ref type="tests" from="test.fixture_recall" to="TESTS.xml#amb.duplicate_reading" />
+    <ref type="tests" from="test.fixture_recall" to="TESTS.xml#amb.round_definition" />
+    <ref type="tests" from="test.fixture_recall" to="TESTS.xml#amb.weekend_holidays" />
+    <ref type="tests" from="test.fixture_recall" to="TESTS.xml#amb.gap_repeats" />
+    <ref type="tests" from="test.fixture_recall" to="TESTS.xml#amb.repeated_entry_id" />
+    <ref type="tests" from="test.fixture_recall" to="TESTS.xml#amb.benford_alert_level" />
+    <ref type="tests" from="test.fixture_clean" to="GOAL.xml#crit.false_alerts" />
+    <ref type="tests" from="test.fixture_clean" to="SCHEMA.xml#table.alert" />
+    <ref type="tests" from="test.exit_codes" to="GOAL.xml#crit.exit_codes" />
+    <ref type="tests" from="test.exit_codes" to="RULES.xml#rule.exit_codes" />
+    <ref type="tests" from="test.exit_codes" to="RULES.xml#rule.encoding" />
+    <ref type="tests" from="test.exit_codes" to="TESTS.xml#amb.encoding" />
+    <ref type="tests" from="test.workbook_sheets" to="GOAL.xml#crit.workbook" />
+    <ref type="tests" from="test.workbook_sheets" to="INTERFACE.xml#screen.sheet_readme" />
+    <ref type="tests" from="test.workbook_sheets" to="INTERFACE.xml#screen.sheet_summary" />
+    <ref type="tests" from="test.workbook_sheets" to="INTERFACE.xml#screen.sheet_test" />
+    <ref type="tests" from="test.workbook_sheets" to="INTERFACE.xml#screen.sheet_benford" />
+    <ref type="tests" from="test.workbook_sheets" to="INTERFACE.xml#screen.sheet_rejected" />
+    <ref type="tests" from="test.runtime" to="GOAL.xml#crit.runtime" />
+    <ref type="tests" from="test.runtime" to="TESTS.xml#amb.runtime" />
+    <ref type="tests" from="test.readme_checklist" to="GOAL.xml#crit.readme" />
+    <ref type="tests" from="test.readme_checklist" to="RULES.xml#rule.alert_notice" />
+    <ref type="tests" from="test.no_network" to="GOAL.xml#constraint.privacy" />
+    <ref type="tests" from="test.budget_zero" to="GOAL.xml#constraint.budget" />
+    <ref type="tests" from="test.ci_matrix" to="GOAL.xml#constraint.python_versions" />
+    <ref type="tests" from="test.no_real_data" to="GOAL.xml#constraint.no_real_data" />
+    <ref type="tests" from="test.no_real_data" to="RULES.xml#rule.no_real_data" />
+    <ref type="tests" from="test.no_real_data" to="RULES.xml#rule.generator_outside_repo" />
+    <ref type="tests" from="test.no_real_data" to="TESTS.xml#amb.generator_location" />
+    <ref type="tests" from="test.no_real_data" to="TESTS.xml#amb.fixtures_size" />
+    <ref type="tests" from="test.amount_cents" to="RULES.xml#rule.amount_cents" />
+    <ref type="tests" from="test.amount_cents" to="TESTS.xml#amb.decimals" />
+    <ref type="tests" from="test.amount_cents" to="TESTS.xml#amb.decimal_comma" />
+    <ref type="tests" from="test.validation_rows" to="RULES.xml#rule.validation_rows" />
+    <ref type="tests" from="test.validation_rows" to="TESTS.xml#amb.max_text" />
+    <ref type="tests" from="test.validation_rows" to="SCHEMA.xml#table.rejected_row" />
+    <ref type="tests" from="test.validation_rows" to="SCHEMA.xml#table.ledger_valid" />
+    <ref type="tests" from="test.benford_mad" to="RULES.xml#rule.benford_mad" />
+    <ref type="tests" from="test.benford_mad" to="TESTS.xml#amb.mad_vs_chi" />
+    <ref type="tests" from="test.benford_mad" to="SCHEMA.xml#table.benford_result" />
+    <ref type="tests" from="test.benford_min_rows" to="RULES.xml#rule.benford_min_rows" />
+    <ref type="tests" from="test.benford_min_rows" to="TESTS.xml#amb.benford_min_rows" />
+    <ref type="tests" from="test.benford_min_rows" to="INTERFACE.xml#state.sheet_benford.empty" />
+    <ref type="tests" from="test.round_base" to="TESTS.xml#amb.round_base" />
+    <ref type="tests" from="test.holidays" to="RULES.xml#rule.holidays_format" />
+    <ref type="tests" from="test.holidays" to="TESTS.xml#amb.holidays_format" />
+    <ref type="tests" from="test.holidays" to="SCHEMA.xml#table.holidays_input" />
+    <ref type="tests" from="test.aggregator" to="RULES.xml#rule.aggregator" />
+    <ref type="tests" from="test.aggregator" to="SCHEMA.xml#table.alert" />
+    <ref type="tests" from="test.formula_neutralize" to="RULES.xml#rule.formula_neutralize" />
+    <ref type="tests" from="test.formula_neutralize" to="SECURITY.xml#file.security" />
+    <ref type="tests" from="test.overwrite" to="RULES.xml#rule.overwrite" />
+    <ref type="tests" from="test.overwrite" to="TESTS.xml#amb.overwrite" />
+    <ref type="tests" from="test.overwrite" to="SCHEMA.xml#perm.write_output" />
+    <ref type="tests" from="test.states_analyze" to="INTERFACE.xml#state.analyze.success" />
+    <ref type="tests" from="test.states_analyze" to="INTERFACE.xml#state.analyze.error" />
+    <ref type="tests" from="test.states_analyze" to="INTERFACE.xml#state.analyze.empty" />
+    <ref type="tests" from="test.states_analyze" to="INTERFACE.xml#state.analyze.partial" />
+    <ref type="tests" from="test.states_analyze" to="INTERFACE.xml#state.analyze.no_permission" />
+    <ref type="tests" from="test.states_analyze" to="INTERFACE.xml#inv.analyze" />
+    <ref type="tests" from="test.states_analyze" to="TESTS.xml#amb.empty_file" />
+    <ref type="tests" from="test.states_analyze" to="SCHEMA.xml#perm.read_input" />
+    <ref type="tests" from="test.states_sheets" to="INTERFACE.xml#state.sheet_readme.success" />
+    <ref type="tests" from="test.states_sheets" to="INTERFACE.xml#state.sheet_summary.success" />
+    <ref type="tests" from="test.states_sheets" to="INTERFACE.xml#state.sheet_test.success" />
+    <ref type="tests" from="test.states_sheets" to="INTERFACE.xml#state.sheet_test.empty" />
+    <ref type="tests" from="test.states_sheets" to="INTERFACE.xml#state.sheet_benford.success" />
+    <ref type="tests" from="test.states_sheets" to="INTERFACE.xml#state.sheet_rejected.success" />
+    <ref type="tests" from="test.states_sheets" to="INTERFACE.xml#state.sheet_rejected.empty" />
+    <ref type="tests" from="test.design_contrast" to="DESIGN.xml#ui.table_header" />
+    <ref type="tests" from="test.design_contrast" to="DESIGN.xml#ui.alert_row" />
+    <ref type="tests" from="test.design_contrast" to="DESIGN.xml#ui.note_box" />
+    <ref type="tests" from="test.design_contrast" to="DESIGN.xml#ui.benford_chart" />
+    <ref type="tests" from="test.publish_permission" to="SCHEMA.xml#perm.publish_repo" />
+    <ref type="tests" from="test.word_scope" to="TESTS.xml#amb.word_scope" />
+    <ref type="depends_on" from="test.fixture_recall" to="GOAL.xml#goal.main" />
+    <ref type="tests" from="test.file_structure" to="RULES.xml#rule.file_structure" />
+    <ref type="tests" from="test.amount_cents" to="RULES.xml#rule.value_format" />
+    <ref type="tests" from="test.validation_rows" to="RULES.xml#rule.value_format" />
+    <ref type="tests" from="test.content_sync" to="CONTENT.xml#file.content" />
+    <ref type="tests" from="test.excel_writing" to="RULES.xml#rule.excel_writing" />
+  </links>
+</spec>

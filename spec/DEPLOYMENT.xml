@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<spec id="file.deployment" file="DEPLOYMENT.xml" type="deployment" project="journal-entry-tests" version="0.2" status="decided">
+  <hosting>Public GitHub repository; no domain, no server, no environment variables.</hosting>
+  <ci>
+    <trigger>Every push and every pull request.</trigger>
+    <matrix>Python 3.11 and 3.14, each on ubuntu-latest and windows-latest (4 jobs).</matrix>
+    <steps>checkout, setup-python, pip install -c constraints.txt -e .[dev], ruff check, pytest.</steps>
+  </ci>
+  <release>Tag v0.1.0 on GitHub; no PyPI publication in version 1.</release>
+  <secrets>No secret is needed.</secrets>
+  <clean_build>Before publishing: create a fresh environment, install the package with constraints.txt and run analyze on ledger_planted.csv.</clean_build>
+  <rollback>Delete the tag and revert the commit.</rollback>
+  <links>
+    <ref type="depends_on" from="file.deployment" to="GOAL.xml#goal.main" />
+    <ref type="depends_on" from="file.deployment" to="GOAL.xml#constraint.python_versions" />
+    <ref type="depends_on" from="file.deployment" to="GOAL.xml#constraint.budget" />
+  </links>
+</spec>

@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='utf-8'?>
+<spec id="file.content" file="CONTENT.xml" type="content" project="journal-entry-tests" version="0.2" status="decided">
+  <strings>
+    <string id="str.err_usage" lang="en">Error: invalid arguments. Use --help for usage.</string>
+    <string id="str.err_missing_file" lang="en">Error: file not found: {path}</string>
+    <string id="str.err_missing_columns" lang="en">Error: missing required columns: {columns}</string>
+    <string id="str.err_unreadable" lang="en">Error: cannot read file as a UTF-8 CSV: {path}</string>
+    <string id="str.err_out_dir" lang="en">Error: cannot write to output directory: {path}</string>
+    <string id="str.err_exists" lang="en">Error: output file already exists: {path}. Use --overwrite to replace it.</string>
+    <string id="str.err_holidays" lang="en">Error: invalid holidays file, line {line}: expected YYYY-MM-DD</string>
+    <string id="str.err_too_many_rows" lang="en">Error: too many rows for one Excel sheet: {sheet}</string>
+    <string id="str.msg_done" lang="en">Done: {alerts} alerts, {rejected} rejected rows. Results saved to {path}</string>
+    <string id="str.msg_empty" lang="en">Done: the ledger has no valid rows. Results saved to {path}</string>
+    <string id="str.warning" lang="en">An alert is a suspicion to be reviewed by a person. It is not proof of fraud.</string>
+    <string id="str.no_alerts" lang="en">No alerts for this test.</string>
+    <string id="str.no_rejected" lang="en">No rejected rows.</string>
+    <string id="str.benford_skip" lang="en">not enough rows to apply the test</string>
+    <string id="str.rej_missing_value" lang="en">missing value in column {column}</string>
+    <string id="str.rej_bad_integer" lang="en">document_number is not an integer</string>
+    <string id="str.rej_bad_date" lang="en">posting_date is not a valid date (expected YYYY-MM-DD)</string>
+    <string id="str.rej_bad_amount" lang="en">amount is not a valid number</string>
+    <string id="str.rej_decimals" lang="en">amount has more than 2 decimal places</string>
+    <string id="str.rej_bad_entry_type" lang="en">entry_type must be manual or automatic</string>
+    <string id="str.rej_too_long" lang="en">text longer than 255 characters in column {column}</string>
+    <string id="str.reason_duplicate" lang="en">same account, amount and date as another row</string>
+    <string id="str.reason_round" lang="en">amount is a multiple of {base}</string>
+    <string id="str.reason_weekend" lang="en">posted on a weekend</string>
+    <string id="str.reason_holiday" lang="en">posted on a holiday</string>
+    <string id="str.reason_gap" lang="en">missing document numbers {first} to {last}</string>
+    <string id="str.reason_benford" lang="en">first digit distribution deviates from Benford's law</string>
+    <string id="str.sheet_readme" lang="en">README</string>
+    <string id="str.sheet_summary" lang="en">Summary</string>
+    <string id="str.sheet_duplicates" lang="en">Duplicates</string>
+    <string id="str.sheet_round" lang="en">Round values</string>
+    <string id="str.sheet_weekend" lang="en">Weekend and holiday</string>
+    <string id="str.sheet_gaps" lang="en">Numbering gaps</string>
+    <string id="str.sheet_benford" lang="en">Benford</string>
+    <string id="str.sheet_rejected" lang="en">Rejected rows</string>
+    <string id="str.readme_intro" lang="en">This workbook lists entries that match five journal entry tests. The list below explains each sheet.</string>
+    <string id="str.help_analyze" lang="en">Apply five journal entry tests to a ledger CSV and write results.xlsx.</string>
+    <string id="str.rej_field_count" lang="en">row has {found} fields, expected {expected}</string>
+    <string id="str.explain_summary" lang="en">Summary: number of alerts per test.</string>
+    <string id="str.explain_duplicates" lang="en">Duplicates: rows with the same account, amount and date.</string>
+    <string id="str.explain_round" lang="en">Round values: amounts that are a multiple of the round base.</string>
+    <string id="str.explain_weekend" lang="en">Weekend and holiday: rows posted on a Saturday, a Sunday or a listed holiday.</string>
+    <string id="str.explain_gaps" lang="en">Numbering gaps: ranges of document numbers that do not appear.</string>
+    <string id="str.explain_benford" lang="en">Benford: first digit distribution compared with Benford's law.</string>
+    <string id="str.explain_rejected" lang="en">Rejected rows: rows that failed validation and were not tested.</string>
+    <string id="str.benford_caveat" lang="en">With few rows, a ledger that follows Benford can still be flagged. In a simulation, about 2 in 100 were flagged at 1000 rows.</string>
+    <string id="str.col_test" lang="en">Test</string>
+    <string id="str.col_alerts" lang="en">Alerts</string>
+    <string id="str.col_source_row" lang="en">Source row</string>
+    <string id="str.col_entry_id" lang="en">Entry ID</string>
+    <string id="str.col_document_number" lang="en">Document number</string>
+    <string id="str.col_reason" lang="en">Reason</string>
+    <string id="str.col_detail" lang="en">Detail</string>
+    <string id="str.col_raw_line" lang="en">Raw line</string>
+    <string id="str.col_digit" lang="en">First digit</string>
+    <string id="str.col_count" lang="en">Count</string>
+    <string id="str.col_expected" lang="en">Expected</string>
+    <string id="str.col_observed" lang="en">Observed</string>
+    <string id="str.bf_n_rows" lang="en">Rows used</string>
+    <string id="str.bf_mad" lang="en">MAD</string>
+    <string id="str.bf_chi2" lang="en">Chi-square (information only)</string>
+    <string id="str.bf_p_value" lang="en">p-value (information only)</string>
+    <string id="str.bf_classification" lang="en">Classification</string>
+    <string id="str.chart_title" lang="en">First digit: expected and observed</string>
+    <string id="str.chart_x" lang="en">First digit</string>
+    <string id="str.chart_y" lang="en">Proportion</string>
+  </strings>
+  <links>
+    <ref type="depends_on" from="file.content" to="GOAL.xml#goal.main" />
+  </links>
+</spec>

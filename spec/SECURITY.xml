@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='utf-8'?>
+<spec id="file.security" file="SECURITY.xml" type="security" project="journal-entry-tests" version="0.2" status="decided">
+  <scope>There is one user role and one maintainer role; no accounts or passwords. The program processes third-party files and writes files.</scope>
+  <threats>
+    <threat name="formula_injection">
+      <description>A journal entry description that starts with = + - or @ and runs a formula in Excel.</description>
+      <control>Write such texts as literal text.</control>
+    </threat>
+    <threat name="huge_file">
+      <description>A huge file that exhausts memory.</description>
+      <control>Documented tested size of 100000 rows; no enforced limit.</control>
+    </threat>
+    <threat name="path_overwrite">
+      <description>Replacing a user's file by accident.</description>
+      <control>Refuse if the file exists, unless --overwrite is given.</control>
+    </threat>
+    <threat name="data_exfiltration">
+      <description>Ledger data sent out.</description>
+      <control>No network call during analyze, verified by a test.</control>
+    </threat>
+    <threat name="secrets_in_repo">
+      <description>Keys or real data in the repository.</description>
+      <control>Synthetic data only; review before publishing.</control>
+    </threat>
+    <threat name="supply_chain">
+      <description>Compromised packages.</description>
+      <control>Minimal dependencies, versions pinned in constraints.txt, PyPI as the only source.</control>
+    </threat>
+  </threats>
+  <personal_data>The program does not collect or store personal data. Ledger data stays on the user's computer. Legal basis and retention: not applicable, the project does not process the data.</personal_data>
+  <links>
+    <ref type="depends_on" from="file.security" to="GOAL.xml#goal.main" />
+    <ref type="uses" from="file.security" to="RULES.xml#rule.formula_neutralize" />
+    <ref type="uses" from="file.security" to="RULES.xml#rule.overwrite" />
+    <ref type="uses" from="file.security" to="RULES.xml#rule.no_real_data" />
+    <ref type="uses" from="file.security" to="GOAL.xml#constraint.privacy" />
+    <ref type="uses" from="file.security" to="GOAL.xml#constraint.no_real_data" />
+    <ref type="uses" from="file.security" to="SCHEMA.xml#perm.read_input" />
+    <ref type="uses" from="file.security" to="SCHEMA.xml#perm.write_output" />
+    <ref type="uses" from="file.security" to="SCHEMA.xml#perm.publish_repo" />
+  </links>
+</spec>

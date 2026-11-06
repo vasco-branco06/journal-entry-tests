@@ -1,0 +1,19 @@
+# Pinned versions. Install with: pip install -c constraints.txt -e ".[dev]"
+# NumPy and SciPy need separate pins: their newest releases require Python 3.12 or later.
+colorama==0.4.6
+et_xmlfile==2.0.0
+iniconfig==2.3.1
+numpy==2.4.6; python_version < "3.12"
+numpy==2.5.4; python_version >= "3.12"
+openpyxl==3.1.5
+packaging==26.3
+pandas==3.1.1
+pluggy==1.7.0
+Pygments==2.21.0
+pytest==9.2.0
+python-dateutil==4.0.0
+ruff==0.17.4
+scipy==1.17.1; python_version < "3.12"
+scipy==1.18.1; python_version >= "3.12"
+tzdata==2026.6
+xlsxwriter==3.3.1
