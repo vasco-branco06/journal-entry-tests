@@ -30,7 +30,8 @@ Note: the specification network (version 0.2) is marked **unverified** because t
   - Decisions: `fail-fast: false` and `permissions: contents: read` in the workflow; actions at `@v7`; `setuptools==84.2.1` pinned in `pyproject.toml` (pip builds in an isolated environment and ignores `constraints.txt`); `python-docx` not pinned, it belongs to U8.
   - test.ci_matrix: passed. The first runs (push and pull request) failed on both Windows jobs: 2 CLI tests looked for the installed script only next to `python.exe`, and the runner has no venv (issue I01, closed). `script()` in `tests/test_cli.py` now also searches `sysconfig.get_path("scripts")`. Runs 42223571648 (push) and 42223580586 (pull request) on commit 4504ce0: 4 of 4 jobs green in each.
   - Repository: `github.com/vasco-branco06/journal-entry-tests`, public; PR #1 open, not merged. `gh api .../collaborators` lists only `vasco-branco06` (evidence for test.publish_permission, still to be confirmed by the owner in Settings).
-  - Still open: test.budget_zero and test.publish_permission (owner).
+  - test.budget_zero: passed, reported by the owner on 2026-11-06 ("spent nothing"); no invoice file was shown to the agent. test.publish_permission: passed, the owner confirmed they are the only collaborator, matching `gh api`.
+  - Still open: the tag `v0.1.0` and the merge of PR #1 (both approved by the owner on 2026-11-06). Not tested: a `results.xlsx` really held open by Excel (the tests force `os.replace` to fail). The specification network is still marked unverified.
   - Spec: `DEPLOYMENT.xml`; `SECURITY.xml`; `GOAL.xml` (crit.readme, constraints); `DESIGN.xml` (colour_tokens); `RULES.xml` (rule.no_real_data).
   - Tests: test.ci_matrix, test.readme_checklist, test.no_real_data, test.budget_zero, test.design_contrast, test.publish_permission
 - **U8 Word report:** optional, outside v1. Test: test.word_scope
@@ -48,7 +49,7 @@ Six issues found in U2, U3, U5 and U6, all reproduced. Five are fixed, each with
 - Known limit of E01: an unclosed quote followed later by a quote next to a comma (`x,",y"`) still closes the field. Above 255 characters the swallowed text shows as a rejected row; below that, or in an extra column, it passes. It cannot be told apart from a multi-line field, which the spec allows.
 
 The four synthetic files for U3 are in `tests/fixtures`, written by the separate private generator (`rule.generator_outside_repo`).
-What is still untested and what U7 needs are in `context/next-steps.md`.
+All 26 tests of v1 have passed. Only the optional U8 (test.word_scope) is left, so `context/next-steps.md` was deleted.
 Order: U2, U3, U5, U6, U7, then optional U8. There is no U4: the aggregator moved into U3.
 U3 tests that say "run analyze" call the functions directly; U6 repeats them end to end through the CLI.
 Each unit comes with a plain-language explanation for the owner (what, why, how) before or after the code.
