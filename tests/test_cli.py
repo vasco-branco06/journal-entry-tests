@@ -11,6 +11,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import sysconfig
 import time
 from pathlib import Path
 
@@ -72,8 +73,9 @@ def analyze(capsys, ledger, out_dir, *options):
 
 
 def script():
-    """The installed entry point, next to the interpreter running the tests."""
-    path = shutil.which("journal-entry-tests", path=str(Path(sys.executable).parent))
+    """The installed entry point: next to the interpreter (venv, Linux) or in its Scripts folder."""
+    folders = [str(Path(sys.executable).parent), sysconfig.get_path("scripts")]
+    path = shutil.which("journal-entry-tests", path=os.pathsep.join(folders))
     assert path, "journal-entry-tests is not installed in this environment"
     return path
 

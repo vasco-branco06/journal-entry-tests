@@ -30,7 +30,6 @@ journal-entry-tests/
   context/
     code-standards.md
     progress-tracker.md
-    next-steps.md
   spec/                 (12 XML files, changed only through the specification gate)
   src/journal_entry_tests/
     __init__.py
